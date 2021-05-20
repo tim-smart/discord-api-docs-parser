@@ -4,19 +4,23 @@ import * as F from "fp-ts/function";
 import * as R from "remeda";
 import * as O from "fp-ts/Option";
 
-export const fromDocument = ($: Cheerio.CheerioAPI) =>
+export const fromDocument = ($: Cheerio.CheerioAPI): Structure[] =>
   $("h6")
     .filter((_, h6) => /\bstructure\b/i.test($(h6).text()))
-    .map((_, h6) => {
-      const $h6 = $(h6);
-      const $table = $h6.next();
-
-      return {
-        identifier: identifier($h6.text()),
-        fields: fields($)($table),
-      };
-    })
+    .map((_, h6) => fromHeader($)($(h6)))
     .toArray();
+
+export const fromHeader =
+  ($: Cheerio.CheerioAPI) => ($h6: Cheerio.Cheerio<Cheerio.Element>) => {
+    const $table = $h6.next();
+
+    return {
+      identifier: identifier($h6.text()),
+      fields: fields($)($table),
+    };
+  };
+
+export type Structure = ReturnType<ReturnType<typeof fromHeader>>;
 
 export const identifier = (heading: string) =>
   F.pipe(
@@ -79,7 +83,7 @@ const sanitizeIdentifier = (text: string) =>
     O.some(text),
 
     // Snowflake?
-    O.filter((text) => /\bsnowflake/.test(text)),
+    O.filter((text) => /\b(snowflake|object id)/.test(text)),
     O.map(() => "snowflake"),
 
     // String?
@@ -167,7 +171,7 @@ export const referenceFromLink = (
             O.map((ref) => ref.replace(/^.*-object-/, "")),
             // Special cases
             O.map((ref) =>
-              ref.replace(/^application-application-/, "application"),
+              ref.replace(/^application-application-/, "application-"),
             ),
           ),
         ),
@@ -203,7 +207,10 @@ export const identifierOrReference = (
   $description: Cheerio.Cheerio<Cheerio.Element>,
 ): string =>
   F.pipe(
-    relation,
+    // Only use relation if it isn't a snowflake
+    O.some(identifier),
+    O.filter((id) => !["snowflake"].includes(id)),
+    O.chain(() => relation),
 
     // Maybe use reference for arrays
     O.alt(() =>
