@@ -1,12 +1,15 @@
 import * as Cheerio from "cheerio";
-import S from "string";
 import * as F from "fp-ts/function";
-import * as R from "remeda";
 import * as O from "fp-ts/Option";
+import * as R from "remeda";
+import S from "string";
+import * as Common from "./common";
+import * as Enums from "./enums";
 
 export const fromDocument = ($: Cheerio.CheerioAPI): Structure[] =>
   $("h6")
-    .filter((_, h6) => /\bstructure\b/i.test($(h6).text()))
+    .filter((_, h6) => /\b(structure|properties)$/i.test($(h6).text().trim()))
+    .filter((_, el) => Common.hasTable($(el)))
     .map((_, h6) => fromHeader($)($(h6)))
     .toArray();
 
@@ -24,7 +27,7 @@ export type Structure = ReturnType<ReturnType<typeof fromHeader>>;
 
 export const identifier = (heading: string) =>
   F.pipe(
-    heading.replace(/\s+structure\b/i, "").trim(),
+    heading.replace(/\s+structure$/i, "").trim(),
     (title) => S(title).slugify().capitalize().camelize().s,
   );
 
@@ -46,7 +49,7 @@ export const field = (
   $type: Cheerio.Cheerio<Cheerio.Element>,
   $description: Cheerio.Cheerio<Cheerio.Element>,
 ) => {
-  const name = $name.text().replace(/\*/g, "");
+  const name = $name.text().replace(/\*/g, "").trim();
   const identifier = name.replace(/\?/g, "");
   const optional = /\?$/.test(name);
 
@@ -55,7 +58,6 @@ export const field = (
     optional,
     type: type($type, $description),
     description: $description.text(),
-    descriptionHTML: $description.html(),
   };
 };
 
@@ -74,7 +76,6 @@ export const type = (
     identifier: identifierOrReference(rawIdentifier, relation, $description),
     nullable,
     array,
-    html: $type.html(),
   };
 };
 
@@ -105,7 +106,7 @@ const sanitizeIdentifier = (text: string) =>
     // Normalize ints
     O.alt(() =>
       F.pipe(
-        O.fromNullable(text.match(/^int/)),
+        O.fromNullable(text.match(/\bint/)),
         O.map(() => "integer"),
       ),
     ),
@@ -141,38 +142,22 @@ export const referenceFromLink = (
         // Structures
         O.some(ref),
         O.filter(() => includeStructures),
-        O.filter((ref) => /-structure$/.test(ref)),
+        O.filter((ref) => /-(structure|properties)$/.test(ref)),
         O.map((ref) => ref.replace(/^.*-object-/, "")),
         O.map((ref) => ref.replace(/-structure$/, "")),
+        // Misc clean up
+        O.map((ref) => ref.replace(/identify-identify/, "identify")),
+        O.map(Common.typeify),
 
-        // Types
+        // Enum
         O.alt(() =>
           F.pipe(
             O.some(ref),
-            O.filter((ref) => /-types$/.test(ref)),
-            O.map((ref) => ref.replace(/^.*-object-/, "")),
-          ),
-        ),
-
-        // Enums
-        O.alt(() =>
-          F.pipe(
-            O.some(ref),
-            O.filter((ref) => /-enum$/.test(ref)),
-            O.map((ref) => ref.replace(/^.*-object-/, "")),
-          ),
-        ),
-
-        // Flags
-        O.alt(() =>
-          F.pipe(
-            O.some(ref),
-            O.filter((ref) => /-flags$/.test(ref)),
-            O.map((ref) => ref.replace(/^.*-object-/, "")),
-            // Special cases
-            O.map((ref) =>
-              ref.replace(/^application-application-/, "application-"),
+            O.filter((ref) =>
+              /-(behaviors|enum|features|level|modes|tier|types)$/.test(ref),
             ),
+            O.map((ref) => ref.replace(/^.*-object-/, "")),
+            O.map(Enums.identifier),
           ),
         ),
 
@@ -184,6 +169,7 @@ export const referenceFromLink = (
             O.filter((ref) => /-object$/.test(ref)),
             O.map((ref) => ref.replace(/^data-models-/, "")),
             O.map((ref) => ref.replace(/-object$/, "")),
+            O.map(Common.typeify),
           ),
         ),
 
@@ -192,11 +178,9 @@ export const referenceFromLink = (
           F.pipe(
             O.some(ref),
             O.filter(() => includeStructures),
+            O.map(Common.typeify),
           ),
         ),
-
-        // Turn into identifier
-        O.map((id) => S(id).capitalize().camelize().s),
       ),
     ),
   );
@@ -212,11 +196,11 @@ export const identifierOrReference = (
     O.filter((id) => !["snowflake"].includes(id)),
     O.chain(() => relation),
 
-    // Maybe use reference for arrays
+    // Maybe use reference for arrays or objects
     O.alt(() =>
       F.pipe(
         O.some(identifier),
-        O.filter((id) => ["array"].includes(id)),
+        O.filter((id) => /array|list|object/.test(id)),
         O.chain(() => referenceFromLinks($description.find("a"))),
       ),
     ),

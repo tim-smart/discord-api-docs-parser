@@ -1,43 +1,58 @@
 import * as Cheerio from "cheerio";
+import * as FS from "fs/promises";
 import marked from "marked";
 import * as Path from "path";
-import * as FSU from "./utils/fs";
 import * as Rx from "rxjs";
 import * as RxO from "rxjs/operators";
-import * as FS from "fs/promises";
+import * as Enums from "./enums";
+import * as Flags from "./flags";
 import * as Structures from "./structures";
+import * as FSU from "./utils/fs";
 
 const parseMarkdown = (src: string) =>
   Cheerio.load(marked(src, { sanitize: false }));
 
-const API_REPO_PATH = Path.resolve(process.argv[2]);
-const API_DOCS_PATH = Path.join(API_REPO_PATH, "docs");
+export const parse = (repoPath: string) => {
+  const API_REPO_PATH = Path.resolve(repoPath);
+  const API_DOCS_PATH = Path.join(API_REPO_PATH, "docs");
 
-const docs$ = FSU.files$(API_DOCS_PATH).pipe(
-  RxO.filter((file) => Path.extname(file) === ".md"),
+  const docs$ = FSU.files$(API_DOCS_PATH).pipe(
+    RxO.filter((file) => Path.extname(file) === ".md"),
 
-  RxO.flatMap((file) =>
-    Rx.zip(
-      Rx.of(Path.relative(API_DOCS_PATH, file)),
-      FS.readFile(file).then((blob) => parseMarkdown(blob.toString())),
+    RxO.flatMap((file) =>
+      Rx.zip(
+        Rx.of(Path.relative(API_DOCS_PATH, file)),
+        FS.readFile(file).then((blob) => parseMarkdown(blob.toString())),
+      ),
     ),
-  ),
 
-  RxO.share(),
-);
+    RxO.share(),
+  );
 
-docs$
-  .pipe(
-    RxO.filter(([file]) => file.startsWith("resources")),
-    RxO.flatMap(([file, $]) =>
-      Structures.fromDocument($).map((s) => ({
-        ...s,
-        file,
-      })),
+  const structures$ = docs$.pipe(
+    RxO.filter(([file]) =>
+      /^(resources|topics\/(gateway|permissions|teams))/i.test(file),
     ),
-    // RxO.filter((s) => s.identifier === "AllowedMentions"),
-    // RxO.map((s) => [s.file, s.identifier]),
-    RxO.toArray(),
-  )
-  // .subscribe();
-  .subscribe((structure) => console.log(JSON.stringify(structure)));
+    RxO.flatMap(([_file, $]) => Structures.fromDocument($)),
+  );
+
+  const flags$ = docs$.pipe(
+    RxO.filter(([file]) =>
+      /^(resources|topics\/(gateway|permissions|teams|opcodes))/i.test(file),
+    ),
+    RxO.flatMap(([_file, $]) => Flags.fromDocument($)),
+  );
+
+  const enums$ = docs$.pipe(
+    RxO.filter(([file]) =>
+      /^(resources|topics\/(gateway|permissions|teams|opcodes))/i.test(file),
+    ),
+    RxO.flatMap(([_file, $]) => Enums.fromDocument($)),
+  );
+
+  return {
+    structures$,
+    flags$,
+    enums$,
+  };
+};
