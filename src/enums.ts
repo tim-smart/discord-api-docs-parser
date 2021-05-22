@@ -4,10 +4,11 @@ import * as O from "fp-ts/Option";
 import * as R from "remeda";
 import * as Common from "./common";
 
-const enumSuffixR = /\b(behaviors|enum|features|level|modes|tier|types)$/i;
+export const enumSuffixR =
+  /(behaviors|enum|events|features|level|modes|opcodes|tier|types?)$/i;
 
-export const fromDocument = ($: Cheerio.CheerioAPI): Structure[] =>
-  $("h6")
+export const fromDocument = ($: Cheerio.CheerioAPI): Enum[] =>
+  $("h2, h6")
     .filter((_, h6) => enumSuffixR.test($(h6).text()))
     .filter((_, el) => Common.hasTable($(el)))
     .map((_, h6) => fromHeader($)($(h6)))
@@ -15,7 +16,7 @@ export const fromDocument = ($: Cheerio.CheerioAPI): Structure[] =>
 
 export const fromHeader =
   ($: Cheerio.CheerioAPI) => ($h6: Cheerio.Cheerio<Cheerio.Element>) => {
-    const $table = $h6.next();
+    const $table = Common.table($h6);
 
     return {
       identifier: identifier($h6.text()),
@@ -23,21 +24,29 @@ export const fromHeader =
     };
   };
 
-export type Structure = ReturnType<ReturnType<typeof fromHeader>>;
+export type Enum = ReturnType<ReturnType<typeof fromHeader>>;
 
 export const identifier = (heading: string) =>
   F.pipe(
     heading.trim(),
     (heading) => heading.replace(/enum/i, ""),
     Common.typeify,
+    Common.maybeRename,
   );
+
+const findValueIndex = Common.columnIndex(["value", "integer", "id", "code"]);
+const findExplainationIndex = Common.columnIndex(["explaination"]);
+const findDescriptionIndex = Common.columnIndex(["description"]);
 
 export const values =
   ($: Cheerio.CheerioAPI) => ($table: Cheerio.Cheerio<Cheerio.Element>) => {
     const $th = $table.find("th");
     const headerCount = $table.find("th").length;
-    const valueIndex = Common.columnIndex(["value", "integer", "id"])($)($th);
-    const descriptionIndex = Common.columnIndex(["description"])($)($th);
+    const valueIndex = findValueIndex($)($th);
+    const descriptionIndex = F.pipe(
+      findExplainationIndex($)($th),
+      O.alt(() => findDescriptionIndex($)($th)),
+    );
 
     const nonNameIndexes = [valueIndex, descriptionIndex]
       .filter(O.isSome)
@@ -77,7 +86,7 @@ export const value = (
   const value = F.pipe(
     $value,
     O.map(($el) => $el.text()),
-    O.getOrElse(() => `"${name}"`),
+    O.getOrElse(() => `"${$name.text().trim()}"`),
   );
 
   return {

@@ -2,33 +2,61 @@ import * as Cheerio from "cheerio";
 import * as F from "fp-ts/function";
 import * as O from "fp-ts/Option";
 import * as R from "remeda";
-import S from "string";
 import * as Common from "./common";
 import * as Enums from "./enums";
 
+const isStructureTable =
+  ($: Cheerio.CheerioAPI) => ($table: Cheerio.Cheerio<Cheerio.Element>) => {
+    const $th = $table.find("th");
+    const headers = $th.map((_, th) => $(th).text().trim()).toArray();
+
+    const field = headers.some((text) => /field|name/i.test(text));
+    const type = headers.some((text) => /type|value/i.test(text));
+    const description = headers.some((text) => /description/i.test(text));
+
+    return field && type && description;
+  };
+
+export const excludeR = /(%|example|params|json|type|change key)/i;
+
+const headerSelectors = ["h2", "h6", "#client-status-object"];
+
 export const fromDocument = ($: Cheerio.CheerioAPI): Structure[] =>
-  $("h6")
-    .filter((_, h6) => /\b(structure|properties)$/i.test($(h6).text().trim()))
-    .filter((_, el) => Common.hasTable($(el)))
-    .map((_, h6) => fromHeader($)($(h6)))
-    .toArray();
+  $(headerSelectors.join(", "))
+    .toArray()
+    .map(
+      (h6) =>
+        [
+          $(h6 as Cheerio.Element),
+          Common.table($(h6 as Cheerio.Element)),
+        ] as const,
+    )
+    .filter(([_$h6, $table]) => isStructureTable($)($table))
+    .filter(([$h6, _]) => !excludeR.test($h6.text()))
+    .map(([$h6, $table]) => fromHeader($)($h6, $table));
 
 export const fromHeader =
-  ($: Cheerio.CheerioAPI) => ($h6: Cheerio.Cheerio<Cheerio.Element>) => {
-    const $table = $h6.next();
-
-    return {
-      identifier: identifier($h6.text()),
-      fields: fields($)($table),
-    };
-  };
+  ($: Cheerio.CheerioAPI) =>
+  (
+    $h6: Cheerio.Cheerio<Cheerio.Element>,
+    $table: Cheerio.Cheerio<Cheerio.Element>,
+  ) => ({
+    identifier: identifier($h6.text()),
+    fields: fields($)($table),
+  });
 
 export type Structure = ReturnType<ReturnType<typeof fromHeader>>;
 
 export const identifier = (heading: string) =>
   F.pipe(
-    heading.replace(/\s+structure$/i, "").trim(),
-    (title) => S(title).slugify().capitalize().camelize().s,
+    heading
+      .replace(/(\s+|-)fields/i, "")
+      .replace(/(\s+|-)object/i, "")
+      .replace(/(\s+|-)structure$/i, "")
+      .replace(/optional/i, "")
+      .trim(),
+    Common.typeify,
+    Common.maybeRename,
   );
 
 export const fields =
@@ -111,8 +139,47 @@ const sanitizeIdentifier = (text: string) =>
       ),
     ),
 
+    // Boolean
+    O.alt(() =>
+      F.pipe(
+        O.fromNullable(text.match(/\bboolean\b/)),
+        O.map(() => "boolean"),
+      ),
+    ),
+
+    // Mixed
+    O.alt(() =>
+      F.pipe(
+        O.fromNullable(text.match(/mixed|object|\bOptionType\b/)),
+        O.map(() => "mixed"),
+      ),
+    ),
+
+    O.alt(() =>
+      F.pipe(
+        O.fromNullable(text.match(/array|list/)),
+        O.map(() => "array"),
+      ),
+    ),
+
+    O.alt(() =>
+      F.pipe(
+        O.fromNullable(text.match(/null/)),
+        O.map(() => "null"),
+      ),
+    ),
+
+    O.alt(() =>
+      F.pipe(
+        O.fromNullable(text.match(/json of id: (\w+)/i)),
+        O.map((type) => `${type[1]}Map`),
+      ),
+    ),
+
     // Normal identifier
-    O.getOrElse(() => text.replace(/[^A-z]/g, "")),
+    O.getOrElse(() =>
+      F.pipe(text.replace(/[^A-z]/g, ""), Common.typeify, Common.maybeRename),
+    ),
   );
 
 export const referenceFromLinks = (
@@ -135,6 +202,7 @@ export const referenceFromLink = (
   F.pipe(
     O.some($link),
     O.chainNullableK(($link) => $link.attr("href")),
+    O.filter((href) => !/wikipedia/.test(href)),
     O.chainNullableK(F.flow((href) => href.split("/"), R.last)),
 
     O.chain((ref) =>
@@ -142,21 +210,21 @@ export const referenceFromLink = (
         // Structures
         O.some(ref),
         O.filter(() => includeStructures),
-        O.filter((ref) => /-(structure|properties)$/.test(ref)),
+        O.filter((ref) => !excludeR.test(ref)),
         O.map((ref) => ref.replace(/^.*-object-/, "")),
-        O.map((ref) => ref.replace(/-structure$/, "")),
         // Misc clean up
+        O.map((ref) => ref.replace(/^data-models-/, "")),
         O.map((ref) => ref.replace(/identify-identify/, "identify")),
-        O.map(Common.typeify),
+        O.map(identifier),
 
         // Enum
         O.alt(() =>
           F.pipe(
             O.some(ref),
-            O.filter((ref) =>
-              /-(behaviors|enum|features|level|modes|tier|types)$/.test(ref),
-            ),
+            O.filter((ref) => Enums.enumSuffixR.test(ref)),
             O.map((ref) => ref.replace(/^.*-object-/, "")),
+            O.map((ref) => ref.replace(/^data-models-/, "")),
+            O.map((ref) => ref.replace(/^update-status-/, "")),
             O.map(Enums.identifier),
           ),
         ),
@@ -170,6 +238,7 @@ export const referenceFromLink = (
             O.map((ref) => ref.replace(/^data-models-/, "")),
             O.map((ref) => ref.replace(/-object$/, "")),
             O.map(Common.typeify),
+            O.map(Common.maybeRename),
           ),
         ),
 
@@ -179,6 +248,7 @@ export const referenceFromLink = (
             O.some(ref),
             O.filter(() => includeStructures),
             O.map(Common.typeify),
+            O.map(Common.maybeRename),
           ),
         ),
       ),
@@ -191,9 +261,9 @@ export const identifierOrReference = (
   $description: Cheerio.Cheerio<Cheerio.Element>,
 ): string =>
   F.pipe(
-    // Only use relation if it isn't a snowflake
+    // Only use relation if it isn't a snowflake or mixed
     O.some(identifier),
-    O.filter((id) => !["snowflake"].includes(id)),
+    O.filter((id) => !["snowflake", "mixed"].includes(id)),
     O.chain(() => relation),
 
     // Maybe use reference for arrays or objects
@@ -214,5 +284,5 @@ export const identifierOrReference = (
       ),
     ),
 
-    O.getOrElse(() => identifier),
+    O.getOrElse(() => identifier.replace(/arrayof/, "")),
   );

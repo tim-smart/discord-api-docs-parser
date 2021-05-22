@@ -6,7 +6,7 @@ import * as Common from "./common";
 
 const flagSuffixR = /\bflags$/i;
 
-export const fromDocument = ($: Cheerio.CheerioAPI): Structure[] =>
+export const fromDocument = ($: Cheerio.CheerioAPI): Flags[] =>
   $("h6")
     .filter((_, h6) => flagSuffixR.test($(h6).text()))
     .filter((_, el) => Common.hasTable($(el)))
@@ -15,7 +15,7 @@ export const fromDocument = ($: Cheerio.CheerioAPI): Structure[] =>
 
 export const fromHeader =
   ($: Cheerio.CheerioAPI) => ($h6: Cheerio.Cheerio<Cheerio.Element>) => {
-    const $table = $h6.next();
+    const $table = Common.table($h6);
 
     return {
       identifier: identifier($h6.text()),
@@ -23,13 +23,14 @@ export const fromHeader =
     };
   };
 
-export type Structure = ReturnType<ReturnType<typeof fromHeader>>;
+export type Flags = ReturnType<ReturnType<typeof fromHeader>>;
 
 export const identifier = (heading: string) =>
   F.pipe(
     heading.trim(),
     (text) => text.replace(/bitwise/i, ""),
     Common.typeify,
+    Common.maybeRename,
   );
 
 export const values =

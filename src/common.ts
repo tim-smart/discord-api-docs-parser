@@ -1,14 +1,39 @@
 import * as Cheerio from "cheerio";
-import S from "string";
-import * as F from "fp-ts/function";
 import * as Arr from "fp-ts/Array";
+import * as F from "fp-ts/function";
+import * as O from "fp-ts/Option";
+import pluralize from "pluralize";
+import S from "string";
 
-export const hasTable = ($el: Cheerio.Cheerio<Cheerio.Element>) => {
-  return $el.next().is("table");
-};
+export const table = ($el: Cheerio.Cheerio<Cheerio.Element>) =>
+  $el.nextUntil($el[0].tagName, "table").first();
+
+export const hasTable = ($el: Cheerio.Cheerio<Cheerio.Element>) =>
+  table($el).length > 0;
 
 export const typeify = (input: string) =>
-  S(input).slugify().capitalize().camelize().s;
+  F.pipe(
+    S(input).underscore().slugify().capitalize().camelize().s,
+    pluralize.singular,
+  );
+
+const remaps: Record<string, string> = {
+  Allowedmention: "AllowedMention",
+  Applicationcommandoption: "ApplicationCommandOption",
+  Applicationcommandoptionchoice: "ApplicationCommandOptionChoice",
+  Applicationcommandoptiontype: "ApplicationCommandOptionType",
+  Applicationcommandpermission: "ApplicationCommandPermission",
+  Applicationcommandpermissiontype: "ApplicationCommandPermissionType",
+  Presence: "PresenceUpdateEvent",
+  PresenceUpdate: "PresenceUpdateEvent",
+  Messageinteraction: "MessageInteraction",
+  UpdatePresence: "GatewayPresenceUpdate",
+};
+export const maybeRename = (id: string) =>
+  F.pipe(
+    O.fromNullable(remaps[id]),
+    O.getOrElse(() => id),
+  );
 
 export const constantify = (input: string) =>
   S(input.replace(/[^A-z1-9 ]/, ""))
