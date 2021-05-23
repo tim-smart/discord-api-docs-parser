@@ -1,23 +1,33 @@
-import { ParseResult } from "../../main";
-import { Structure } from "../../structures";
+import * as F from "fp-ts/function";
+import * as O from "fp-ts/Option";
 import * as Rx from "rxjs";
 import * as RxO from "rxjs/operators";
 import { Enum } from "../../enums";
-import * as F from "fp-ts/function";
-import * as O from "fp-ts/Option";
 import { Flags } from "../../flags";
-import * as Fs from "fs/promises";
-import * as Path from "path";
+import { ParseResult } from "../../main";
+import { IDMap } from "../../maps";
+import { Structure } from "../../structures";
 
-export const generate = ({ structures$, enums$, flags$ }: ParseResult) => {
+export const generate = ({
+  endpoints$,
+  structures$,
+  enums$,
+  flags$,
+  maps$,
+}: ParseResult) => {
   Rx.merge(
     Rx.of(snowflake()),
-    Rx.from(
-      Fs.readFile(Path.join(__dirname, "polyfill.txt"), { encoding: "utf8" }),
-    ),
+
     structures$.pipe(RxO.map(structure)),
+    endpoints$.pipe(
+      RxO.map(({ params }) => params),
+      RxO.filter(O.isSome),
+      RxO.map((p) => structure(p.value)),
+    ),
+
     enums$.pipe(RxO.map(enumerable)),
     flags$.pipe(RxO.map(flags)),
+    maps$.pipe(RxO.map(map)),
   ).subscribe(console.log);
 };
 
@@ -56,6 +66,8 @@ const typeIdentifier = (name: string) => {
       return "any";
     case "timestamp":
       return "string";
+    case "dict":
+      return "Record<string, string>";
   }
 
   return name;
@@ -95,3 +107,8 @@ const flagsValue = ({
 
   return `${comment}${name}: ${left} << ${right},`;
 };
+
+const map = ({ identifier, key, value }: IDMap) =>
+  `export type ${identifier} = Record<${typeIdentifier(key)}, ${typeIdentifier(
+    value,
+  )}>;`;

@@ -1,6 +1,0 @@
-export type UserMap = Record<Snowflake, User>;
-export type MemberMap = Record<Snowflake, GuildMember>;
-export type RoleMap = Record<Snowflake, Role>;
-export type ChannelMap = Record<Snowflake, Channel>;
-
-export type UnavailableGuild = Required<Pick<Guild, "id" | "unavailable">>;

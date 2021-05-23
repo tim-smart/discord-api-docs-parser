@@ -11,9 +11,11 @@ export const table = ($el: Cheerio.Cheerio<Cheerio.Element>) =>
 export const hasTable = ($el: Cheerio.Cheerio<Cheerio.Element>) =>
   table($el).length > 0;
 
-export const typeify = (input: string) =>
+export const typeify = (input: string, caps = true) =>
   F.pipe(
-    S(input).underscore().slugify().capitalize().camelize().s,
+    S(input).underscore().slugify(),
+    (s) => (caps ? s.capitalize() : s),
+    (s) => s.camelize().s,
     pluralize.singular,
   );
 
@@ -24,6 +26,9 @@ const remaps: Record<string, string> = {
   Applicationcommandoptiontype: "ApplicationCommandOptionType",
   Applicationcommandpermission: "ApplicationCommandPermission",
   Applicationcommandpermissiontype: "ApplicationCommandPermissionType",
+  Binary: "string",
+  Filecontent: "string",
+  ImageDatum: "string",
   Presence: "PresenceUpdateEvent",
   PresenceUpdate: "PresenceUpdateEvent",
   Messageinteraction: "MessageInteraction",

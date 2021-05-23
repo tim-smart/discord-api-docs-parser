@@ -21,7 +21,11 @@ export const excludeR = /(%|example|params|json|type|change key)/i;
 
 const headerSelectors = ["h2", "h6", "#client-status-object"];
 
-export const fromDocument = ($: Cheerio.CheerioAPI): Structure[] =>
+export const fromDocument = (
+  $: Cheerio.CheerioAPI,
+  exclude = excludeR,
+  include = /.*/,
+): Structure[] =>
   $(headerSelectors.join(", "))
     .toArray()
     .map(
@@ -32,7 +36,8 @@ export const fromDocument = ($: Cheerio.CheerioAPI): Structure[] =>
         ] as const,
     )
     .filter(([_$h6, $table]) => isStructureTable($)($table))
-    .filter(([$h6, _]) => !excludeR.test($h6.text()))
+    .filter(([$h6, _]) => !exclude.test($h6.text()))
+    .filter(([$h6, _]) => include.test($h6.text()))
     .map(([$h6, $table]) => fromHeader($)($h6, $table));
 
 export const fromHeader =
@@ -147,18 +152,17 @@ const sanitizeIdentifier = (text: string) =>
       ),
     ),
 
-    // Mixed
     O.alt(() =>
       F.pipe(
-        O.fromNullable(text.match(/mixed|object|\bOptionType\b/)),
-        O.map(() => "mixed"),
+        O.fromNullable(text.match(/array|list/)),
+        O.map(() => "array"),
       ),
     ),
 
     O.alt(() =>
       F.pipe(
-        O.fromNullable(text.match(/array|list/)),
-        O.map(() => "array"),
+        O.fromNullable(text.match(/dict/)),
+        O.map(() => "dict"),
       ),
     ),
 
@@ -173,6 +177,14 @@ const sanitizeIdentifier = (text: string) =>
       F.pipe(
         O.fromNullable(text.match(/json of id: (\w+)/i)),
         O.map((type) => `${type[1]}Map`),
+      ),
+    ),
+
+    // Mixed
+    O.alt(() =>
+      F.pipe(
+        O.fromNullable(text.match(/mixed|object|\bOptionType\b/)),
+        O.map(() => "mixed"),
       ),
     ),
 

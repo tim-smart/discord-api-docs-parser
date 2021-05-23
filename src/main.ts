@@ -4,11 +4,14 @@ import marked from "marked";
 import * as Path from "path";
 import * as Rx from "rxjs";
 import * as RxO from "rxjs/operators";
+import * as Additional from "./additional";
+import * as Endpoints from "./endpoints";
 import * as Enums from "./enums";
 import * as Flags from "./flags";
+import { generate } from "./langs/typescript/generate";
 import * as Structures from "./structures";
 import * as FSU from "./utils/fs";
-import { generate } from "./langs/typescript/generate";
+import * as Maps from "./maps";
 
 const parseMarkdown = (src: string) =>
   Cheerio.load(marked(src, { sanitize: false }));
@@ -33,13 +36,16 @@ export const parse = (repoPath: string) => {
     RxO.share(),
   );
 
-  const structures$ = docs$.pipe(
-    RxO.filter(([file]) =>
-      /^(interactions|resources|topics\/(gateway|permissions|teams))/i.test(
-        file,
+  const structures$ = Rx.merge(
+    Rx.from(Additional.structures()),
+    docs$.pipe(
+      RxO.filter(([file]) =>
+        /^(interactions|resources|topics\/(gateway|permissions|teams))/i.test(
+          file,
+        ),
       ),
+      RxO.flatMap(([_file, [$]]) => Structures.fromDocument($)),
     ),
-    RxO.flatMap(([_file, [$]]) => Structures.fromDocument($)),
   );
 
   const flags$ = docs$.pipe(
@@ -60,10 +66,23 @@ export const parse = (repoPath: string) => {
     RxO.flatMap(([_file, [$]]) => Enums.fromDocument($)),
   );
 
+  const endpoints$ = docs$.pipe(
+    RxO.filter(([file]) =>
+      /^(interactions|resources|topics\/(gateway|permissions|teams|opcodes))/i.test(
+        file,
+      ),
+    ),
+    RxO.flatMap(([_file, [_, md]]) => Endpoints.fromDocument(md)),
+  );
+
+  const maps$ = Rx.from(Maps.generate());
+
   return {
-    structures$,
-    flags$,
+    endpoints$,
     enums$,
+    flags$,
+    maps$,
+    structures$,
   };
 };
 
