@@ -2,11 +2,14 @@ import * as F from "fp-ts/function";
 import * as O from "fp-ts/Option";
 import * as Rx from "rxjs";
 import * as RxO from "rxjs/operators";
+import { Endpoint } from "../../endpoints";
 import { Enum } from "../../enums";
 import { Flags } from "../../flags";
 import { ParseResult } from "../../main";
 import { IDMap } from "../../maps";
 import { Structure } from "../../structures";
+import * as Common from "../../common";
+import Prettier from "prettier";
 
 export const generate = ({
   endpoints$,
@@ -19,16 +22,30 @@ export const generate = ({
     Rx.of(snowflake()),
 
     structures$.pipe(RxO.map(structure)),
+
+    // Endpoint params
     endpoints$.pipe(
       RxO.map(({ params }) => params),
       RxO.filter(O.isSome),
       RxO.map((p) => structure(p.value)),
     ),
 
+    // Endpoint routes
+    endpoints$.pipe(
+      RxO.toArray(),
+      RxO.map((routes) => endpoints(routes)),
+    ),
+
     enums$.pipe(RxO.map(enumerable)),
     flags$.pipe(RxO.map(flags)),
     maps$.pipe(RxO.map(map)),
-  ).subscribe(console.log);
+  )
+    .pipe(
+      RxO.toArray(),
+      RxO.map((chunks) => chunks.join("\n")),
+      RxO.map((source) => Prettier.format(source, { parser: "typescript" })),
+    )
+    .subscribe(console.log);
 };
 
 const snowflake = () => `export type Snowflake = \`\${bigint}\``;
@@ -112,3 +129,77 @@ const map = ({ identifier, key, value }: IDMap) =>
   `export type ${identifier} = Record<${typeIdentifier(key)}, ${typeIdentifier(
     value,
   )}>;`;
+
+const endpoints = (routes: Endpoint[]) => {
+  const props = routes.map(endpoint).join("\n");
+
+  return `export type Route<P, O> = {
+      method: string;
+      url: string;
+      params?: P;
+      options?: O;
+    };
+
+    export function createRoutes<O = any>(fetch: <R, P, O>(route: Route<P, O>) => Promise<R>) {
+      return {
+        ${props}
+      };
+    }
+
+    export type Routes = ReturnType<typeof createRoutes>;`;
+};
+
+const endpoint = ({
+  route,
+  url,
+  description,
+  method,
+  params,
+  response,
+}: Endpoint) => {
+  const urlParams = F.pipe(
+    O.fromNullable(url.match(/\{.*?\}/g)),
+    O.map((params) =>
+      params
+        .map((param) => param.replace(/[{}]/, ""))
+        .map((param) => Common.typeify(param, false)),
+    ),
+    O.map((params) => params.join(": string, ") + ": string, "),
+    O.getOrElse(() => ""),
+  );
+  const urlTemplate = url.replace(
+    /\{(.*?)\}/,
+    (_, param) => `\${${Common.typeify(param, false)}}`,
+  );
+  const paramsType = F.pipe(
+    params,
+    O.map((p) => p.identifier),
+    O.map((p) => `Partial<${p}>`),
+    O.getOrElse(() => "any"),
+  );
+  const responseType = F.pipe(
+    response,
+    O.map(({ ref, array }) => {
+      const refOrAny = F.pipe(
+        ref,
+        O.map(typeIdentifier),
+        O.getOrElse(() => "any"),
+      );
+      return `${refOrAny}${array ? "[]" : ""}`;
+    }),
+    O.getOrElse(() => "any"),
+  );
+
+  const comment = F.pipe(
+    description,
+    O.map((d) => `/** ${d} */\n`),
+    O.getOrElse(() => ""),
+  );
+
+  return `${comment}${route}: (${urlParams}params?: ${paramsType}, options?: O) => fetch<${responseType}, ${paramsType}, O>({
+      method: "${method}",
+      url: \`${urlTemplate}\`,
+      params,
+      options,
+    }),`;
+};

@@ -11,6 +11,9 @@ export const table = ($el: Cheerio.Cheerio<Cheerio.Element>) =>
 export const hasTable = ($el: Cheerio.Cheerio<Cheerio.Element>) =>
   table($el).length > 0;
 
+export const camelify = (input: string) =>
+  F.pipe(S(input).underscore().slugify(), (s) => s.camelize().s);
+
 export const typeify = (input: string, caps = true) =>
   F.pipe(
     S(input).underscore().slugify(),
@@ -21,14 +24,19 @@ export const typeify = (input: string, caps = true) =>
 
 const remaps: Record<string, string> = {
   Allowedmention: "AllowedMention",
+  Applicationcommand: "ApplicationCommand",
   Applicationcommandoption: "ApplicationCommandOption",
   Applicationcommandoptionchoice: "ApplicationCommandOptionChoice",
   Applicationcommandoptiontype: "ApplicationCommandOptionType",
   Applicationcommandpermission: "ApplicationCommandPermission",
   Applicationcommandpermissiontype: "ApplicationCommandPermissionType",
   Binary: "string",
+  Connecting: "mixed",
   Filecontent: "string",
+  GetGateway: "mixed",
+  Guildapplicationcommandpermission: "GuildApplicationCommandPermission",
   ImageDatum: "string",
+  Object: "mixed",
   Presence: "PresenceUpdateEvent",
   PresenceUpdate: "PresenceUpdateEvent",
   Messageinteraction: "MessageInteraction",

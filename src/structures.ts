@@ -183,7 +183,7 @@ const sanitizeIdentifier = (text: string) =>
     // Mixed
     O.alt(() =>
       F.pipe(
-        O.fromNullable(text.match(/mixed|object|\bOptionType\b/)),
+        O.fromNullable(text.match(/mixed|\bOptionType\b/)),
         O.map(() => "mixed"),
       ),
     ),

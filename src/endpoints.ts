@@ -20,6 +20,9 @@ export const isEndpointSection = (section: string[]) =>
   endpointR.test(section[0]);
 
 export const fromSection = (section: string[]) => {
+  const markdown = `## ${section.join("\r\n")}`;
+  const $ = Cheerio.load(Marked(markdown));
+
   const match = section[0].match(endpointR)!;
   const route = identifier(match[1]);
 
@@ -32,9 +35,10 @@ export const fromSection = (section: string[]) => {
 
   return {
     route,
+    description: description($),
     method: match[2],
     url: url(match[3]),
-    params: params(section, route),
+    params: params($, route),
     response,
   };
 };
@@ -42,7 +46,7 @@ export const fromSection = (section: string[]) => {
 export type Endpoint = ReturnType<typeof fromSection>;
 
 export const identifier = (heading: string) =>
-  F.pipe(heading.trim(), (heading) => Common.typeify(heading, false));
+  F.pipe(heading.trim(), Common.camelify);
 
 export const url = (raw: string) => {
   return raw.replace(
@@ -65,10 +69,7 @@ export const parseResponse = (markdown: string) => {
   };
 };
 
-export const params = (section: string[], route: string) => {
-  const markdown = `## ${section.join("\r\n")}`;
-  const $ = Cheerio.load(Marked(markdown));
-
+export const params = ($: Cheerio.CheerioAPI, route: string) => {
   return F.pipe(
     Structures.fromDocument($, /zzz/, /params/i),
     Arr.head,
@@ -78,3 +79,10 @@ export const params = (section: string[], route: string) => {
     })),
   );
 };
+
+export const description = ($: Cheerio.CheerioAPI) =>
+  F.pipe(
+    O.some($("h2").next("p").first()),
+    O.filter(($p) => $p.length > 0),
+    O.map(($p) => $p.text().trim()),
+  );

@@ -12,6 +12,7 @@ import { generate } from "./langs/typescript/generate";
 import * as Structures from "./structures";
 import * as FSU from "./utils/fs";
 import * as Maps from "./maps";
+import * as Blacklist from "./blacklist";
 
 const parseMarkdown = (src: string) =>
   Cheerio.load(marked(src, { sanitize: false }));
@@ -36,42 +37,33 @@ export const parse = (repoPath: string) => {
     RxO.share(),
   );
 
-  const structures$ = Rx.merge(
-    Rx.from(Additional.structures()),
-    docs$.pipe(
-      RxO.filter(([file]) =>
-        /^(interactions|resources|topics\/(gateway|permissions|teams))/i.test(
-          file,
-        ),
-      ),
-      RxO.flatMap(([_file, [$]]) => Structures.fromDocument($)),
-    ),
-  );
-
-  const flags$ = docs$.pipe(
+  const filteredDocs$ = docs$.pipe(
     RxO.filter(([file]) =>
       /^(interactions|resources|topics\/(gateway|permissions|teams|opcodes))/i.test(
         file,
       ),
     ),
+  );
+
+  const structures$ = Rx.merge(
+    Rx.from(Additional.structures()),
+    filteredDocs$.pipe(
+      RxO.flatMap(([_file, [$]]) => Structures.fromDocument($)),
+    ),
+  ).pipe(
+    RxO.filter(({ identifier }) => !Blacklist.structures.includes(identifier)),
+    RxO.distinct(({ identifier }) => identifier),
+  );
+
+  const flags$ = filteredDocs$.pipe(
     RxO.flatMap(([_file, [$]]) => Flags.fromDocument($)),
   );
 
-  const enums$ = docs$.pipe(
-    RxO.filter(([file]) =>
-      /^(interactions|resources|topics\/(gateway|permissions|teams|opcodes))/i.test(
-        file,
-      ),
-    ),
+  const enums$ = filteredDocs$.pipe(
     RxO.flatMap(([_file, [$]]) => Enums.fromDocument($)),
   );
 
-  const endpoints$ = docs$.pipe(
-    RxO.filter(([file]) =>
-      /^(interactions|resources|topics\/(gateway|permissions|teams|opcodes))/i.test(
-        file,
-      ),
-    ),
+  const endpoints$ = filteredDocs$.pipe(
     RxO.flatMap(([_file, [_, md]]) => Endpoints.fromDocument(md)),
   );
 
