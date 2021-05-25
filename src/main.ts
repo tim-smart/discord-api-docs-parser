@@ -8,11 +8,14 @@ import * as Additional from "./additional";
 import * as Endpoints from "./endpoints";
 import * as Enums from "./enums";
 import * as Flags from "./flags";
-import { generate } from "./langs/typescript/generate";
+import { generate } from "./langs/typescript";
 import * as Structures from "./structures";
 import * as FSU from "./utils/fs";
 import * as Maps from "./maps";
 import * as Blacklist from "./blacklist";
+import * as Gateway from "./gateway";
+import * as O from "fp-ts/Option";
+import * as Aliases from "./aliases";
 
 const parseMarkdown = (src: string) =>
   Cheerio.load(marked(src, { sanitize: false }));
@@ -45,34 +48,61 @@ export const parse = (repoPath: string) => {
     ),
   );
 
-  const structures$ = Rx.merge(
-    Rx.from(Additional.structures()),
-    filteredDocs$.pipe(
-      RxO.flatMap(([_file, [$]]) => Structures.fromDocument($)),
-    ),
-  ).pipe(
-    RxO.filter(({ identifier }) => !Blacklist.structures.includes(identifier)),
-    RxO.distinct(({ identifier }) => identifier),
+  const gatewayDocs$ = docs$.pipe(
+    RxO.filter(([file]) => /^topics\/gateway/i.test(file)),
   );
 
-  const flags$ = filteredDocs$.pipe(
-    RxO.flatMap(([_file, [$]]) => Flags.fromDocument($)),
-  );
-
-  const enums$ = filteredDocs$.pipe(
-    RxO.flatMap(([_file, [$]]) => Enums.fromDocument($)),
+  const gateway$ = gatewayDocs$.pipe(
+    RxO.flatMap(([_file, [$]]) => Gateway.fromDocument($)),
   );
 
   const endpoints$ = filteredDocs$.pipe(
     RxO.flatMap(([_file, [_, md]]) => Endpoints.fromDocument(md)),
   );
 
+  const structures$ = Rx.merge(
+    Rx.from(Additional.structures()),
+    filteredDocs$.pipe(
+      RxO.flatMap(([_file, [$]]) => Structures.fromDocument($)),
+      RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
+    ),
+    endpoints$.pipe(
+      RxO.map(({ params }) => params),
+      RxO.filter(O.isSome),
+      RxO.map((params) => params.value),
+      RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
+    ),
+  ).pipe(RxO.distinct(({ identifier }) => identifier));
+
+  const flags$ = filteredDocs$.pipe(
+    RxO.flatMap(([_file, [$]]) => Flags.fromDocument($)),
+    RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
+  );
+
+  const enums$ = filteredDocs$.pipe(
+    RxO.flatMap(([_file, [$]]) => Enums.fromDocument($)),
+    RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
+  );
+
   const maps$ = Rx.from(Maps.generate());
 
+  const aliases$ = Rx.merge(
+    Rx.from(Aliases.list),
+    gatewayDocs$.pipe(
+      RxO.flatMap(([_file, [_, md]]) => Gateway.events(md)),
+      RxO.map(
+        ({ identifier, payload }) =>
+          [identifier, [payload]] as [string, string[]],
+      ),
+    ),
+  ).pipe(RxO.distinct(([id]) => id));
+
   return {
+    aliases$,
     endpoints$,
     enums$,
     flags$,
+    gateway$,
     maps$,
     structures$,
   };

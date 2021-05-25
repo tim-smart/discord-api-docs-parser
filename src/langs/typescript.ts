@@ -2,13 +2,14 @@ import * as F from "fp-ts/function";
 import * as O from "fp-ts/Option";
 import * as Rx from "rxjs";
 import * as RxO from "rxjs/operators";
-import { Endpoint } from "../../endpoints";
-import { Enum } from "../../enums";
-import { Flags } from "../../flags";
-import { ParseResult } from "../../main";
-import { IDMap } from "../../maps";
-import { Structure } from "../../structures";
-import * as Common from "../../common";
+import { Endpoint } from "../endpoints";
+import { Enum } from "../enums";
+import { Flags } from "../flags";
+import { ParseResult } from "../main";
+import { IDMap } from "../maps";
+import { Structure } from "../structures";
+import { GatewaySection } from "../gateway";
+import * as Common from "../common";
 import Prettier from "prettier";
 
 export const generate = ({
@@ -17,18 +18,14 @@ export const generate = ({
   enums$,
   flags$,
   maps$,
+  gateway$,
+  aliases$,
 }: ParseResult) => {
   Rx.merge(
     Rx.of(snowflake()),
+    Rx.of(gatewayPayload()),
 
     structures$.pipe(RxO.map(structure)),
-
-    // Endpoint params
-    endpoints$.pipe(
-      RxO.map(({ params }) => params),
-      RxO.filter(O.isSome),
-      RxO.map((p) => structure(p.value)),
-    ),
 
     // Endpoint routes
     endpoints$.pipe(
@@ -39,6 +36,8 @@ export const generate = ({
     enums$.pipe(RxO.map(enumerable)),
     flags$.pipe(RxO.map(flags)),
     maps$.pipe(RxO.map(map)),
+    gateway$.pipe(RxO.map(gateway)),
+    aliases$.pipe(RxO.map(alias)),
   )
     .pipe(
       RxO.toArray(),
@@ -168,13 +167,21 @@ const endpoint = ({
     O.getOrElse(() => ""),
   );
   const urlTemplate = url.replace(
-    /\{(.*?)\}/,
+    /\{(.*?)\}/g,
     (_, param) => `\${${Common.typeify(param, false)}}`,
   );
   const paramsType = F.pipe(
     params,
     O.map((p) => p.identifier),
     O.map((p) => `Partial<${p}>`),
+  );
+  const paramsArg = F.pipe(
+    paramsType,
+    O.map((type) => `params: ${type}, `),
+    O.getOrElse(() => ""),
+  );
+  const paramsForFetch = F.pipe(
+    paramsType,
     O.getOrElse(() => "any"),
   );
   const responseType = F.pipe(
@@ -196,10 +203,39 @@ const endpoint = ({
     O.getOrElse(() => ""),
   );
 
-  return `${comment}${route}: (${urlParams}params?: ${paramsType}, options?: O) => fetch<${responseType}, ${paramsType}, O>({
+  return `${comment}${route}: (${urlParams}${paramsArg}options?: O) => fetch<${responseType}, ${paramsForFetch}, O>({
       method: "${method}",
-      url: \`${urlTemplate}\`,
-      params,
+      url: \`${urlTemplate}\`,${paramsArg ? "\nparams," : ""}
       options,
     }),`;
+};
+
+const gatewayPayload =
+  () => `export interface GatewayPayload<T extends GatewayCommand> {
+  /** opcode for the payload */
+  op: GatewayOpcode;
+  /** event data */
+  d: T | null;
+  /** sequence number, used for resuming sessions and heartbeats */
+  s: number | null;
+  /** the event name for this payload */
+  t: string | null;
+}`;
+
+const gateway = ({ identifier, values }: GatewaySection) => {
+  const plural = `${identifier}s`;
+  const union = values.map(({ type }) => type).join(" | ");
+  const props = values
+    .map(({ name, type }) => `"${name}": ${type};`)
+    .join("\n");
+
+  return `export type ${identifier} = ${union};
+export interface ${plural} {
+  ${props}
+}`;
+};
+
+const alias = ([name, types]: [string, string[]]) => {
+  const type = types.map(typeIdentifier).join(" & ");
+  return `export type ${name} = ${type};`;
 };

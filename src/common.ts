@@ -40,7 +40,16 @@ const remaps: Record<string, string> = {
   Presence: "PresenceUpdateEvent",
   PresenceUpdate: "PresenceUpdateEvent",
   Messageinteraction: "MessageInteraction",
-  UpdatePresence: "GatewayPresenceUpdate",
+
+  // Gateway commands
+  GuildRequestMember: "RequestGuildMember",
+  GatewayPresenceUpdate: "UpdatePresence",
+  GatewayVoiceStateUpdate: "UpdateVoiceState",
+  MessageReactionRemoveEmoji: "MessageReactionRemoveEmojiEvent",
+  WebhookUpdateEvent: "WebhooksUpdateEvent",
+
+  // Gateway events
+  Hello: "HelloEvent",
 };
 export const maybeRename = (id: string) =>
   F.pipe(

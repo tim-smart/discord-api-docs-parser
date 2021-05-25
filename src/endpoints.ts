@@ -48,15 +48,14 @@ export type Endpoint = ReturnType<typeof fromSection>;
 export const identifier = (heading: string) =>
   F.pipe(heading.trim(), Common.camelify);
 
-export const url = (raw: string) => {
-  return raw.replace(
-    /\{(.*)\}/g,
+export const url = (raw: string) =>
+  raw.replace(
+    /\{(.*?)\}/g,
     F.flow(
       (_, param: string) => param.split("#")[0].replace(/[^A-z]/g, "_"),
       (param) => `{${param}}`,
     ),
   );
-};
 
 export const parseResponse = (markdown: string) => {
   const $ = Cheerio.load(Marked(markdown));

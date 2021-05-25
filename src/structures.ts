@@ -282,7 +282,7 @@ export const identifierOrReference = (
     O.alt(() =>
       F.pipe(
         O.some(identifier),
-        O.filter((id) => /array|list|object/.test(id)),
+        O.filter((id) => /array|mixed/.test(id)),
         O.chain(() => referenceFromLinks($description.find("a"))),
       ),
     ),
