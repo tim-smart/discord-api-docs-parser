@@ -1,9 +1,16 @@
 {
-  "name": "discord-api-docs-parser",
-  "version": "1.0.0",
+  "name": "@timsmart/discord-api-docs-parser",
+  "description": "Discord API docs parser for generating code",
+  "version": "0.1.0",
   "main": "index.js",
   "author": "Tim Smart <tim.smart@arisechurch.com>",
   "license": "MIT",
+  "files": [
+    "dist/"
+  ],
+  "bin": {
+    "discord-api-codegen": "bin/discord-api-codegen"
+  },
   "devDependencies": {
     "@types/marked": "^2.0.2",
     "@types/node": "^15.3.1",
@@ -22,6 +29,7 @@
     "prepare": "husky install && tsc"
   },
   "dependencies": {
+    "@types/yargs": "^17.0.0",
     "cheerio": "^1.0.0-rc.9",
     "fp-ts": "^2.10.5",
     "glob-to-regexp": "^0.4.1",
@@ -30,6 +38,7 @@
     "prettier": "^2.3.0",
     "remeda": "^0.0.27",
     "rxjs": "^7.0.1",
-    "string": "^3.3.3"
+    "string": "^3.3.3",
+    "yargs": "^17.0.1"
   }
 }

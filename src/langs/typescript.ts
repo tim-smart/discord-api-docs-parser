@@ -20,32 +20,32 @@ export const generate = ({
   maps$,
   gateway$,
   aliases$,
-}: ParseResult) => {
-  Rx.merge(
-    Rx.of(snowflake()),
-    Rx.of(gatewayPayload()),
+}: ParseResult) =>
+  F.pipe(
+    Rx.merge(
+      Rx.of(snowflake()),
+      Rx.of(gatewayPayload()),
 
-    structures$.pipe(RxO.map(structure)),
+      structures$.pipe(RxO.map(structure)),
 
-    // Endpoint routes
-    endpoints$.pipe(
-      RxO.toArray(),
-      RxO.map((routes) => endpoints(routes)),
+      // Endpoint routes
+      endpoints$.pipe(
+        RxO.toArray(),
+        RxO.map((routes) => endpoints(routes)),
+      ),
+
+      enums$.pipe(RxO.map(enumerable)),
+      flags$.pipe(RxO.map(flags)),
+      maps$.pipe(RxO.map(map)),
+      gateway$.pipe(RxO.map(gateway)),
+      aliases$.pipe(RxO.map(alias)),
     ),
+    RxO.toArray(),
+    RxO.map((chunks) => chunks.join("\n")),
+    RxO.map((source) => Prettier.format(source, { parser: "typescript" })),
 
-    enums$.pipe(RxO.map(enumerable)),
-    flags$.pipe(RxO.map(flags)),
-    maps$.pipe(RxO.map(map)),
-    gateway$.pipe(RxO.map(gateway)),
-    aliases$.pipe(RxO.map(alias)),
-  )
-    .pipe(
-      RxO.toArray(),
-      RxO.map((chunks) => chunks.join("\n")),
-      RxO.map((source) => Prettier.format(source, { parser: "typescript" })),
-    )
-    .subscribe(console.log);
-};
+    (ob) => Rx.lastValueFrom(ob),
+  );
 
 const snowflake = () => `export type Snowflake = \`\${bigint}\``;
 
@@ -138,14 +138,11 @@ const endpoints = (routes: Endpoint[]) => {
       params?: P;
       options?: O;
     };
-
     export function createRoutes<O = any>(fetch: <R, P, O>(route: Route<P, O>) => Promise<R>) {
       return {
         ${props}
       };
-    }
-
-    export type Routes = ReturnType<typeof createRoutes>;`;
+    }`;
 };
 
 const endpoint = ({

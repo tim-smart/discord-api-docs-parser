@@ -1,21 +1,20 @@
 import * as Cheerio from "cheerio";
+import * as O from "fp-ts/Option";
 import * as FS from "fs/promises";
 import marked from "marked";
 import * as Path from "path";
 import * as Rx from "rxjs";
 import * as RxO from "rxjs/operators";
 import * as Additional from "./additional";
+import * as Aliases from "./aliases";
+import * as Blacklist from "./blacklist";
 import * as Endpoints from "./endpoints";
 import * as Enums from "./enums";
 import * as Flags from "./flags";
-import { generate } from "./langs/typescript";
+import * as Gateway from "./gateway";
+import * as Maps from "./maps";
 import * as Structures from "./structures";
 import * as FSU from "./utils/fs";
-import * as Maps from "./maps";
-import * as Blacklist from "./blacklist";
-import * as Gateway from "./gateway";
-import * as O from "fp-ts/Option";
-import * as Aliases from "./aliases";
 
 const parseMarkdown = (src: string) =>
   Cheerio.load(marked(src, { sanitize: false }));
@@ -109,5 +108,3 @@ export const parse = (repoPath: string) => {
 };
 
 export type ParseResult = ReturnType<typeof parse>;
-
-generate(parse(process.argv[2]));
