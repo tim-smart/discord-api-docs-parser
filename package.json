@@ -1,5 +1,5 @@
 {
-  "name": "@timsmart/discord-api-docs-parser",
+  "name": "@tim-smart/discord-api-docs-parser",
   "description": "Discord API docs parser for generating code",
   "version": "0.1.0",
   "main": "index.js",
