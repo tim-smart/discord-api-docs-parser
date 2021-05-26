@@ -25,8 +25,15 @@ export const generate = ({
   F.pipe(
     Rx.merge(
       Rx.of(snowflake()),
+      Rx.of(gatewayPayload()),
 
-      structures$.pipe(RxO.map(structure)),
+      structures$.pipe(
+        // Ignore GatewayPayload as we have provided our own with generics.
+        RxO.filter(
+          ({ identifier }) => !["GatewayPayload"].includes(identifier),
+        ),
+        RxO.map(structure),
+      ),
 
       // Endpoint routes
       endpoints$.pipe(
@@ -48,6 +55,17 @@ export const generate = ({
   );
 
 const snowflake = () => `export type Snowflake = \`\${bigint}\``;
+
+const gatewayPayload = () => `export interface GatewayPayload<T = any | null> {
+  /** opcode for the payload */
+  op: GatewayOpcode;
+  /** event data */
+  d?: T;
+  /** sequence number, used for resuming sessions and heartbeats */
+  s?: number | null;
+  /** the event name for this payload */
+  t?: string | null;
+}`;
 
 const structure = (s: Structure) => {
   const fields = s.fields.map(structureField).join("\n");
