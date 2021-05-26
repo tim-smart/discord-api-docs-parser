@@ -63,9 +63,9 @@ const structureField = ({
   description,
 }: Structure["fields"][0]) => {
   return `/** ${description} */
-    "${name}"${optional ? "?" : ""}: ${typeIdentifier(type.identifier)}${
-    type.array ? "[]" : ""
-  }${type.nullable ? " | null" : ""};`;
+    "${name}"${optional || type.nullable ? "?" : ""}: ${typeIdentifier(
+    type.identifier,
+  )}${type.array ? "[]" : ""}${type.nullable ? " | null" : ""};`;
 };
 
 const typeIdentifier = (name: string) => {
