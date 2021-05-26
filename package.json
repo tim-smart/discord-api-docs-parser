@@ -6,6 +6,7 @@
   "author": "Tim Smart <tim.smart@arisechurch.com>",
   "license": "MIT",
   "files": [
+    "bin/",
     "dist/"
   ],
   "bin": {
