@@ -168,8 +168,9 @@ const endpoint = ({
   );
   const paramsType = F.pipe(
     params,
-    O.map((p) => p.identifier),
-    O.map((p) => `Partial<${p}>`),
+    O.map(
+      ({ identifier, array }) => `Partial<${identifier}${array ? "[]" : ""}>`,
+    ),
   );
   const paramsArg = F.pipe(
     paramsType,

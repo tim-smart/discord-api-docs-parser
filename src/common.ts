@@ -59,7 +59,6 @@ export const maybeRename = (id: string) =>
 
 export const constantify = (input: string) =>
   S(input.replace(/[^A-z1-9 ]/, ""))
-    .slugify()
     .underscore()
     .s.toUpperCase();
 

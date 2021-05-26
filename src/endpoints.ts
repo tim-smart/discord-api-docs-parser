@@ -68,33 +68,45 @@ export const parseResponse = (markdown: string) => {
   };
 };
 
+export interface EndpointParams {
+  identifier: string;
+  array: boolean;
+  structure: O.Option<Structures.Structure>;
+}
+
 export const params = (
   $: Cheerio.CheerioAPI,
   markdown: string,
   route: string,
-) => {
-  const takes = F.pipe(
+): O.Option<EndpointParams> => {
+  const takes: O.Option<EndpointParams> = F.pipe(
     O.fromNullable(/\bTakes a.*?\./.exec(markdown)),
     O.map((matches) => matches[0]),
-    O.map((md) => Cheerio.load(Marked(md))),
-    O.chain(($) => Structures.referenceFromLinks($("a"))),
-    O.map(
-      (identifier): Structures.Structure => ({
-        identifier,
-        fields: [],
-      }),
+    O.map((md) => [Cheerio.load(Marked(md)), /array|list/.test(md)] as const),
+    O.chain(([$, array]) =>
+      F.pipe(
+        Structures.referenceFromLinks($("a")),
+        O.map((identifier) => ({
+          identifier,
+          array,
+          structure: O.none,
+        })),
+      ),
     ),
   );
 
   return F.pipe(
     Structures.fromDocument($, /zzz/, /params/i),
     Arr.head,
-    O.map(
-      (s): Structures.Structure => ({
-        ...s,
-        identifier: `${Common.typeify(route)}Params`,
-      }),
-    ),
+    O.map((structure) => ({
+      ...structure,
+      identifier: `${Common.typeify(route)}Params`,
+    })),
+    O.map((structure) => ({
+      identifier: structure.identifier,
+      array: false,
+      structure: O.some(structure),
+    })),
     O.alt(() => takes),
   );
 };

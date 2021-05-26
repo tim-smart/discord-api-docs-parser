@@ -1,4 +1,5 @@
 import * as Cheerio from "cheerio";
+import * as F from "fp-ts/function";
 import * as O from "fp-ts/Option";
 import * as FS from "fs/promises";
 import marked from "marked";
@@ -67,7 +68,12 @@ export const parse = (repoPath: string) => {
       RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
     ),
     endpoints$.pipe(
-      RxO.map(({ params }) => params),
+      RxO.map(({ params }) =>
+        F.pipe(
+          params,
+          O.chain(({ structure }) => structure),
+        ),
+      ),
       RxO.filter(O.isSome),
       RxO.map((params) => params.value),
       RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
