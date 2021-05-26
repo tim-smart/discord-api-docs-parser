@@ -38,7 +38,7 @@ export const fromSection = (section: string[]) => {
     description: description($),
     method: match[2],
     url: url(match[3]),
-    params: params($, route),
+    params: params($, markdown, route),
     response,
   };
 };
@@ -68,14 +68,34 @@ export const parseResponse = (markdown: string) => {
   };
 };
 
-export const params = ($: Cheerio.CheerioAPI, route: string) => {
+export const params = (
+  $: Cheerio.CheerioAPI,
+  markdown: string,
+  route: string,
+) => {
+  const takes = F.pipe(
+    O.fromNullable(/\bTakes a.*?\./.exec(markdown)),
+    O.map((matches) => matches[0]),
+    O.map((md) => Cheerio.load(Marked(md))),
+    O.chain(($) => Structures.referenceFromLinks($("a"))),
+    O.map(
+      (identifier): Structures.Structure => ({
+        identifier,
+        fields: [],
+      }),
+    ),
+  );
+
   return F.pipe(
     Structures.fromDocument($, /zzz/, /params/i),
     Arr.head,
-    O.map((s) => ({
-      ...s,
-      identifier: `${Common.typeify(route)}Params`,
-    })),
+    O.map(
+      (s): Structures.Structure => ({
+        ...s,
+        identifier: `${Common.typeify(route)}Params`,
+      }),
+    ),
+    O.alt(() => takes),
   );
 };
 

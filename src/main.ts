@@ -61,6 +61,7 @@ export const parse = (repoPath: string) => {
 
   const structures$ = Rx.merge(
     Rx.from(Additional.structures()),
+
     filteredDocs$.pipe(
       RxO.flatMap(([_file, [$]]) => Structures.fromDocument($)),
       RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
@@ -71,7 +72,10 @@ export const parse = (repoPath: string) => {
       RxO.map((params) => params.value),
       RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
     ),
-  ).pipe(RxO.distinct(({ identifier }) => identifier));
+  ).pipe(
+    RxO.filter(({ fields }) => fields.length > 0),
+    RxO.distinct(({ identifier }) => identifier),
+  );
 
   const flags$ = filteredDocs$.pipe(
     RxO.flatMap(([_file, [$]]) => Flags.fromDocument($)),
