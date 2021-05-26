@@ -138,7 +138,7 @@ const endpoints = (routes: Endpoint[]) => {
       params?: P;
       options?: O;
     };
-    export function createRoutes<O = any>(fetch: <R, P, O>(route: Route<P, O>) => Promise<R>) {
+    export function createRoutes<O = any>(fetch: <R, P>(route: Route<P, O>) => Promise<R>) {
       return {
         ${props}
       };
@@ -200,7 +200,7 @@ const endpoint = ({
     O.getOrElse(() => ""),
   );
 
-  return `${comment}${route}: (${urlParams}${paramsArg}options?: O) => fetch<${responseType}, ${paramsForFetch}, O>({
+  return `${comment}${route}: (${urlParams}${paramsArg}options?: O) => fetch<${responseType}, ${paramsForFetch}>({
       method: "${method}",
       url: \`${urlTemplate}\`,${paramsArg ? "\nparams," : ""}
       options,
