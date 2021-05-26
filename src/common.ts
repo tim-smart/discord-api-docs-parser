@@ -32,6 +32,7 @@ const remaps: Record<string, string> = {
   Applicationcommandpermissiontype: "ApplicationCommandPermissionType",
   Binary: "string",
   Connecting: "mixed",
+  DocsInteractionsMessageComponent: "MessageComponentList",
   Filecontent: "string",
   GetGateway: "mixed",
   Guildapplicationcommandpermission: "GuildApplicationCommandPermission",

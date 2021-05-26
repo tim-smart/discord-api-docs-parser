@@ -26,4 +26,19 @@ export const structures = (): Structure[] => [
       },
     ],
   },
+  {
+    identifier: "MessageActionRow",
+    fields: [
+      {
+        name: "components",
+        optional: true,
+        type: {
+          identifier: "MessageComponent",
+          nullable: false,
+          array: true,
+        },
+        description: "list of child components",
+      },
+    ],
+  },
 ];

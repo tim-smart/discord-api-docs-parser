@@ -3,6 +3,7 @@ import * as F from "fp-ts/function";
 import * as O from "fp-ts/Option";
 import * as R from "remeda";
 import * as Common from "./common";
+import * as Arr from "fp-ts/Array";
 
 export const enumSuffixR =
   /(behaviors|enum|events|features|level|modes|opcodes|tier|types?)$/i;
@@ -34,7 +35,9 @@ export const identifier = (heading: string) =>
     Common.maybeRename,
   );
 
-const findValueIndex = Common.columnIndex(["value", "integer", "id", "code"]);
+const findValueIndex = Common.columnIndex(["id", "value", "integer", "code"]);
+const findSecondaryValueIndex = Common.columnIndex(["type"]);
+const findNameIndex = Common.columnIndex(["name"]);
 const findExplainationIndex = Common.columnIndex(["explaination"]);
 const findDescriptionIndex = Common.columnIndex(["description"]);
 
@@ -42,7 +45,10 @@ export const values =
   ($: Cheerio.CheerioAPI) => ($table: Cheerio.Cheerio<Cheerio.Element>) => {
     const $th = $table.find("th");
     const headerCount = $table.find("th").length;
-    const valueIndex = findValueIndex($)($th);
+    const valueIndex = F.pipe(
+      findValueIndex($)($th),
+      O.alt(() => findSecondaryValueIndex($)($th)),
+    );
     const descriptionIndex = F.pipe(
       findExplainationIndex($)($th),
       O.alt(() => findDescriptionIndex($)($th)),
@@ -51,9 +57,16 @@ export const values =
     const nonNameIndexes = [valueIndex, descriptionIndex]
       .filter(O.isSome)
       .map((i) => i.value);
-    const nameIndex = [...Array(headerCount).keys()].find(
-      (i) => !nonNameIndexes.includes(i),
-    )!;
+
+    const unusedIndex = F.pipe(
+      [...Array(headerCount).keys()],
+      Arr.findFirst((i) => !nonNameIndexes.includes(i)),
+    );
+    const nameIndex = F.pipe(
+      findNameIndex($)($th),
+      O.alt(() => unusedIndex),
+      O.getOrElse(() => 0),
+    );
 
     return F.pipe(
       $table
@@ -86,7 +99,8 @@ export const value = (
   const value = F.pipe(
     $value,
     O.map(($el) => $el.text()),
-    O.getOrElse(() => `"${$name.text().trim()}"`),
+    O.getOrElse(() => $name.text().trim()),
+    (val) => (/\d|"/.test(val) ? val : `"${val}"`),
   );
 
   return {

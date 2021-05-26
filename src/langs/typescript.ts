@@ -239,7 +239,9 @@ export interface ${plural} {
 }`;
 };
 
-const alias = ({ identifier, nullable, types }: Alias) => {
+const alias = ({ identifier, nullable, types, array = false }: Alias) => {
   const type = types.map(typeIdentifier).join(" & ");
-  return `export type ${identifier} = ${type}${nullable ? " | null" : ""};`;
+  return `export type ${identifier} = (${type}${nullable ? " | null" : ""})${
+    array ? "[]" : ""
+  };`;
 };

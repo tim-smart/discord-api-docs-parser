@@ -147,7 +147,7 @@ const sanitizeIdentifier = (text: string) =>
     // Boolean
     O.alt(() =>
       F.pipe(
-        O.fromNullable(text.match(/\bboolean\b/)),
+        O.fromNullable(text.match(/\bbool(ean)?\b/)),
         O.map(() => "boolean"),
       ),
     ),
