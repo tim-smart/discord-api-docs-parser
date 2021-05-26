@@ -1,10 +1,12 @@
 import * as Cheerio from "cheerio";
 import * as F from "fp-ts/function";
 import * as O from "fp-ts/Option";
+import Marked from "marked";
 import * as R from "remeda";
 import * as Common from "./common";
+import { Enum } from "./enums";
+import { Flags } from "./flags";
 import * as Structures from "./structures";
-import * as Marked from "marked";
 
 export const fromDocument = ($: Cheerio.CheerioAPI): GatewaySection[] =>
   $("h6")
@@ -97,3 +99,34 @@ const event = (markdown: string): O.Option<GatewayEvent> => {
     })),
   );
 };
+
+export const intents = ($: Cheerio.CheerioAPI): Flags[] =>
+  $("h3")
+    .toArray()
+    .map((h3) => [$(h3), $(h3).nextUntil("h3", "pre").first()] as const)
+    .filter(
+      ([$h3, $pre]) => /list of intents/i.test($h3.text()) && $pre.length > 0,
+    )
+    .map(([_$h6, $pre]) => ({
+      identifier: "GatewayIntents",
+      values: intentValuesFromPre($pre),
+    }));
+
+const intentValuesFromPre = (
+  $pre: Cheerio.Cheerio<Cheerio.Element>,
+): Flags["values"] =>
+  F.pipe(
+    O.fromNullable($pre.text().matchAll(/\b(\w+)\s+\((\d+) << (\d+)\)/g)),
+    O.map((matches) => [...matches]),
+    O.fold(
+      () => [],
+      (matches) =>
+        matches.map(([_, name, left, right]) => ({
+          name,
+          description: O.none,
+          bigint: false,
+          left,
+          right,
+        })),
+    ),
+  );

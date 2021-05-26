@@ -83,9 +83,12 @@ export const parse = (repoPath: string) => {
     RxO.distinct(({ identifier }) => identifier),
   );
 
-  const flags$ = filteredDocs$.pipe(
-    RxO.flatMap(([_file, [$]]) => Flags.fromDocument($)),
-    RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
+  const flags$ = Rx.merge(
+    filteredDocs$.pipe(
+      RxO.flatMap(([_file, [$]]) => Flags.fromDocument($)),
+      RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
+    ),
+    gatewayDocs$.pipe(RxO.flatMap(([_file, [$]]) => Gateway.intents($))),
   );
 
   const enums$ = filteredDocs$.pipe(
