@@ -103,11 +103,14 @@ export const parse = (repoPath: string) => {
     gatewayDocs$.pipe(
       RxO.flatMap(([_file, [_, md]]) => Gateway.events(md)),
       RxO.map(
-        ({ identifier, payload }) =>
-          [identifier, [payload]] as [string, string[]],
+        ({ identifier, payload }): Aliases.Alias => ({
+          identifier,
+          nullable: false,
+          types: [payload],
+        }),
       ),
     ),
-  ).pipe(RxO.distinct(([id]) => id));
+  ).pipe(RxO.distinct(({ identifier }) => identifier));
 
   return {
     aliases$,

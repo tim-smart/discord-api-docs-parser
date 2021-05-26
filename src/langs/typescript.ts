@@ -11,6 +11,7 @@ import { Structure } from "../structures";
 import { GatewaySection } from "../gateway";
 import * as Common from "../common";
 import Prettier from "prettier";
+import { Alias } from "../aliases";
 
 export const generate = ({
   endpoints$,
@@ -220,7 +221,7 @@ export interface ${plural} {
 }`;
 };
 
-const alias = ([name, types]: [string, string[]]) => {
+const alias = ({ identifier, nullable, types }: Alias) => {
   const type = types.map(typeIdentifier).join(" & ");
-  return `export type ${name} = ${type};`;
+  return `export type ${identifier} = ${type}${nullable ? " | null" : ""};`;
 };

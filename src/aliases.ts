@@ -1,19 +1,32 @@
-export const list: [string, string[]][] = [
-  ["Heartbeat", ["integer"]],
-  [
-    "ApplicationCommandCreateEvent",
-    ["ApplicationCommand", "ApplicationCommandExtra"],
-  ],
-  [
-    "ApplicationCommandUpdateEvent",
-    ["ApplicationCommand", "ApplicationCommandExtra"],
-  ],
-  [
-    "ApplicationCommandDeleteEvent",
-    ["ApplicationCommand", "ApplicationCommandExtra"],
-  ],
-  ["GuildMemberAddEvent", ["GuildMember", "GuildMemberAddExtra"]],
-  ["InvalidSessionEvent", ["boolean"]],
-  ["ResumedEvent", ["null"]],
-  ["ReconnectEvent", ["null"]],
+export interface Alias {
+  identifier: string;
+  nullable: boolean;
+  types: string[];
+}
+
+export const list: Alias[] = [
+  { identifier: "Heartbeat", nullable: true, types: ["integer"] },
+  {
+    identifier: "ApplicationCommandCreateEvent",
+    nullable: false,
+    types: ["ApplicationCommand", "ApplicationCommandExtra"],
+  },
+  {
+    identifier: "ApplicationCommandUpdateEvent",
+    nullable: false,
+    types: ["ApplicationCommand", "ApplicationCommandExtra"],
+  },
+  {
+    identifier: "ApplicationCommandDeleteEvent",
+    nullable: false,
+    types: ["ApplicationCommand", "ApplicationCommandExtra"],
+  },
+  {
+    identifier: "GuildMemberAddEvent",
+    nullable: false,
+    types: ["GuildMember", "GuildMemberAddExtra"],
+  },
+  { identifier: "InvalidSessionEvent", nullable: false, types: ["boolean"] },
+  { identifier: "ResumedEvent", nullable: false, types: ["null"] },
+  { identifier: "ReconnectEvent", nullable: false, types: ["null"] },
 ];

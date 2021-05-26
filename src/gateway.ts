@@ -4,7 +4,6 @@ import * as O from "fp-ts/Option";
 import Marked from "marked";
 import * as R from "remeda";
 import * as Common from "./common";
-import { Enum } from "./enums";
 import { Flags } from "./flags";
 import * as Structures from "./structures";
 
