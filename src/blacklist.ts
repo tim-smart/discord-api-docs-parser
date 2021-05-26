@@ -1,1 +1,1 @@
-export const list = ["CommandsAndEvent", "GatewayEvent", "GatewayPayload"];
+export const list = ["CommandsAndEvent", "GatewayEvent"];

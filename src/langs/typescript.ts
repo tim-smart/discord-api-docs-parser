@@ -24,7 +24,6 @@ export const generate = ({
   F.pipe(
     Rx.merge(
       Rx.of(snowflake()),
-      Rx.of(gatewayPayload()),
 
       structures$.pipe(RxO.map(structure)),
 
@@ -206,18 +205,6 @@ const endpoint = ({
       options,
     }),`;
 };
-
-const gatewayPayload =
-  () => `export interface GatewayPayload<T extends GatewayCommand> {
-  /** opcode for the payload */
-  op: GatewayOpcode;
-  /** event data */
-  d: T | null;
-  /** sequence number, used for resuming sessions and heartbeats */
-  s: number | null;
-  /** the event name for this payload */
-  t: string | null;
-}`;
 
 const gateway = ({ identifier, values }: GatewaySection) => {
   const plural = `${identifier}s`;
