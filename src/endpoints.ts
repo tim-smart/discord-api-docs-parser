@@ -38,7 +38,7 @@ export const fromSection = (section: string[]) => {
     description: description($),
     method: match[2],
     url: url(match[3]),
-    params: params($, markdown, route, /get|delete/i.test(match[2])),
+    params: params($, markdown, route, !/get|delete/i.test(match[2])),
     response,
   };
 };

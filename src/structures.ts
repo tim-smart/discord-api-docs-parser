@@ -102,7 +102,7 @@ export const type = (
   const nullable = text.startsWith("?");
 
   const rawIdentifier = sanitizeIdentifier(text);
-  const array = rawIdentifier === "array";
+  const array = rawIdentifier === "array" || /array|list/i.test(text);
   const relation = referenceFromLinks($type.find("a"));
 
   return {
