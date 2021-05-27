@@ -104,11 +104,13 @@ export const type = (
   const rawIdentifier = sanitizeIdentifier(text);
   const array = rawIdentifier === "array" || /array|list/i.test(text);
   const relation = referenceFromLinks($type.find("a"));
+  const snowflakeMap = /map of snowflakes/i.test(text);
 
   return {
     identifier: identifierOrReference(rawIdentifier, relation, $description),
     nullable,
     array,
+    snowflakeMap,
   };
 };
 
@@ -170,13 +172,6 @@ const sanitizeIdentifier = (text: string) =>
       F.pipe(
         O.fromNullable(text.match(/null/)),
         O.map(() => "null"),
-      ),
-    ),
-
-    O.alt(() =>
-      F.pipe(
-        O.fromNullable(text.match(/json of id: (\w+)/i)),
-        O.map((type) => `${type[1]}Map`),
       ),
     ),
 

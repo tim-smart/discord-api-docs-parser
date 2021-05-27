@@ -6,7 +6,6 @@ import { Endpoint } from "../endpoints";
 import { Enum } from "../enums";
 import { Flags } from "../flags";
 import { ParseResult } from "../main";
-import { IDMap } from "../maps";
 import { Structure } from "../structures";
 import { GatewaySection } from "../gateway";
 import * as Common from "../common";
@@ -18,7 +17,6 @@ export const generate = ({
   structures$,
   enums$,
   flags$,
-  maps$,
   gateway$,
   aliases$,
 }: ParseResult) =>
@@ -43,7 +41,6 @@ export const generate = ({
 
       enums$.pipe(RxO.map(enumerable)),
       flags$.pipe(RxO.map(flags)),
-      maps$.pipe(RxO.map(map)),
       gateway$.pipe(RxO.map(gateway)),
       aliases$.pipe(RxO.map(alias)),
     ),
@@ -80,12 +77,11 @@ const structureField = ({
   optional,
   type,
   description,
-}: Structure["fields"][0]) => {
-  return `/** ${description} */
-    "${name}"${optional || type.nullable ? "?" : ""}: ${typeIdentifier(
-    type.identifier,
-  )}${type.array ? "[]" : ""}${type.nullable ? " | null" : ""};`;
-};
+}: Structure["fields"][0]) => `/** ${description} */
+  "${name}"${optional || type.nullable ? "?" : ""}: ${F.pipe(
+  typeIdentifier(type.identifier),
+  maybeSnowflakeMap(type.snowflakeMap),
+)}${type.array ? "[]" : ""}${type.nullable ? " | null" : ""};`;
 
 const typeIdentifier = (name: string) => {
   switch (name) {
@@ -106,6 +102,9 @@ const typeIdentifier = (name: string) => {
 
   return name;
 };
+
+const maybeSnowflakeMap = (isMap: boolean) => (input: string) =>
+  isMap ? `Record<Snowflake, ${input}>` : input;
 
 const enumerable = (e: Enum) => `export enum ${e.identifier} {
   ${e.values.map(enumerableValue).join("\n")}
@@ -141,11 +140,6 @@ const flagsValue = ({
 
   return `${comment}${name}: ${left} << ${right},`;
 };
-
-const map = ({ identifier, key, value }: IDMap) =>
-  `export type ${identifier} = Record<${typeIdentifier(key)}, ${typeIdentifier(
-    value,
-  )}>;`;
 
 const endpoints = (routes: Endpoint[]) => {
   const props = routes.map(endpoint).join("\n");

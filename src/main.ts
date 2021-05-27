@@ -13,7 +13,6 @@ import * as Endpoints from "./endpoints";
 import * as Enums from "./enums";
 import * as Flags from "./flags";
 import * as Gateway from "./gateway";
-import * as Maps from "./maps";
 import * as Structures from "./structures";
 import * as FSU from "./utils/fs";
 
@@ -96,8 +95,6 @@ export const parse = (repoPath: string) => {
     RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
   );
 
-  const maps$ = Rx.from(Maps.generate());
-
   const aliases$ = Rx.merge(
     Rx.from(Aliases.list),
     gatewayDocs$.pipe(
@@ -133,7 +130,6 @@ export const parse = (repoPath: string) => {
     enums$,
     flags$,
     gateway$,
-    maps$,
     structures$,
   };
 };
