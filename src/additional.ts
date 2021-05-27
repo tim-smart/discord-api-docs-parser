@@ -28,20 +28,4 @@ export const structures = (): Structure[] => [
       },
     ],
   },
-  {
-    identifier: "MessageActionRow",
-    fields: [
-      {
-        name: "components",
-        optional: true,
-        type: {
-          identifier: "MessageComponent",
-          nullable: false,
-          array: true,
-          snowflakeMap: false,
-        },
-        description: "list of child components",
-      },
-    ],
-  },
 ];

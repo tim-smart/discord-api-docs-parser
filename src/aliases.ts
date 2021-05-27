@@ -31,11 +31,4 @@ export const list: Alias[] = [
   { identifier: "InvalidSessionEvent", nullable: false, types: ["boolean"] },
   { identifier: "ResumedEvent", nullable: false, types: ["null"] },
   { identifier: "ReconnectEvent", nullable: false, types: ["null"] },
-
-  {
-    identifier: "MessageComponent",
-    nullable: false,
-    array: false,
-    types: ["Component", "MessageActionRow"],
-  },
 ];
