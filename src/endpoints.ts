@@ -27,9 +27,9 @@ export const fromSection = (section: string[]) => {
   const route = identifier(match[1]);
 
   const response = F.pipe(
-    section.join(" ").match(/\breturns .*?\./i),
+    section.join(" ").match(/\breturns .*?\./gi),
     O.fromNullable,
-    O.map((m) => m[0]),
+    O.map((m) => m.join(" ")),
     O.map(parseResponse),
   );
 
