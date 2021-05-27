@@ -38,10 +38,4 @@ export const list: Alias[] = [
     array: false,
     types: ["Component", "MessageActionRow"],
   },
-  {
-    identifier: "MessageComponentList",
-    nullable: false,
-    array: true,
-    types: ["MessageComponent"],
-  },
 ];

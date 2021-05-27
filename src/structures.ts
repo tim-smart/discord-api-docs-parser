@@ -100,9 +100,9 @@ export const type = (
 ) => {
   const text = $type.text();
   const nullable = text.startsWith("?");
-  const array = /list|array/i.test(text);
 
   const rawIdentifier = sanitizeIdentifier(text);
+  const array = rawIdentifier === "array";
   const relation = referenceFromLinks($type.find("a"));
 
   return {
@@ -154,7 +154,7 @@ const sanitizeIdentifier = (text: string) =>
 
     O.alt(() =>
       F.pipe(
-        O.fromNullable(text.match(/array|list/)),
+        O.fromNullable(text.match(/array|list|component object/)),
         O.map(() => "array"),
       ),
     ),
