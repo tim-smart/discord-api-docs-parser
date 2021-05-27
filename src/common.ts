@@ -6,7 +6,7 @@ import pluralize from "pluralize";
 import S from "string";
 
 export const table = ($el: Cheerio.Cheerio<Cheerio.Element>) =>
-  $el.nextUntil($el[0].tagName, "table").first();
+  $el.nextUntil("h1, h2, h3, h4, h5, h6", "table").first();
 
 export const hasTable = ($el: Cheerio.Cheerio<Cheerio.Element>) =>
   table($el).length > 0;
