@@ -71,11 +71,11 @@ export const parse = (repoPath: string) => {
       RxO.map(({ params }) =>
         F.pipe(
           params,
-          O.chain(({ structure }) => structure),
+          O.map(({ structures }) => structures),
         ),
       ),
       RxO.filter(O.isSome),
-      RxO.map((params) => params.value),
+      RxO.flatMap((params) => params.value),
       RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
     ),
   ).pipe(
@@ -107,6 +107,21 @@ export const parse = (repoPath: string) => {
           identifier,
           nullable: false,
           types: [payload],
+        }),
+      ),
+    ),
+    endpoints$.pipe(
+      RxO.map(({ params }) => params),
+      RxO.filter(O.isSome),
+      RxO.map((p) => p.value),
+      RxO.filter(({ structures }) => structures.length > 1),
+      RxO.map(
+        ({ structures, identifier }): Aliases.Alias => ({
+          identifier,
+          nullable: false,
+          array: false,
+          combinator: "or",
+          types: structures.map((s) => s.identifier),
         }),
       ),
     ),

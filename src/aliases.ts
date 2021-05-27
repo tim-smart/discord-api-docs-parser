@@ -2,6 +2,7 @@ export interface Alias {
   identifier: string;
   nullable: boolean;
   types: string[];
+  combinator?: "and" | "or";
   array?: boolean;
 }
 

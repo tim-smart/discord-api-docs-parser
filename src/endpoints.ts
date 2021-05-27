@@ -38,7 +38,7 @@ export const fromSection = (section: string[]) => {
     description: description($),
     method: match[2],
     url: url(match[3]),
-    params: params($, markdown, route),
+    params: params($, markdown, route, /get|delete/i.test(match[2])),
     response,
   };
 };
@@ -71,13 +71,14 @@ export const parseResponse = (markdown: string) => {
 export interface EndpointParams {
   identifier: string;
   array: boolean;
-  structure: O.Option<Structures.Structure>;
+  structures: Structures.Structure[];
 }
 
 export const params = (
   $: Cheerio.CheerioAPI,
   markdown: string,
   route: string,
+  hasBody: boolean,
 ): O.Option<EndpointParams> => {
   const takes: O.Option<EndpointParams> = F.pipe(
     O.fromNullable(/\bTakes a.*?\./.exec(markdown)),
@@ -89,7 +90,7 @@ export const params = (
         O.map((identifier) => ({
           identifier,
           array,
-          structure: O.none,
+          structures: [],
         })),
       ),
     ),
@@ -97,15 +98,27 @@ export const params = (
 
   return F.pipe(
     Structures.fromDocument($, /zzz/, /params/i),
-    Arr.head,
-    O.map((structure) => ({
-      ...structure,
+    Arr.filter(({ identifier }) =>
+      hasBody ? !/querystring/i.test(identifier) : !/json/i.test(identifier),
+    ),
+    Arr.map((structure) => {
+      const identifier = Common.typeify(route);
+      const variant = structure.identifier
+        .replace(/json/i, "")
+        .replace(/form/i, "")
+        .replace(/querystring/i, "")
+        .replace(/Params?/, "");
+
+      return {
+        ...structure,
+        identifier: `${identifier}${variant}Params`,
+      };
+    }),
+    O.fromPredicate((s) => s.length > 0),
+    O.map((structures) => ({
       identifier: `${Common.typeify(route)}Params`,
-    })),
-    O.map((structure) => ({
-      identifier: structure.identifier,
       array: false,
-      structure: O.some(structure),
+      structures,
     })),
     O.alt(() => takes),
   );

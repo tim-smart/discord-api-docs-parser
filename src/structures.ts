@@ -207,6 +207,16 @@ export const referenceFromLinks = (
     O.chain(($link) => referenceFromLink($link, includeStructures)),
   );
 
+export const referencesFromLinks =
+  ($: Cheerio.CheerioAPI) =>
+  ($links: Cheerio.Cheerio<Cheerio.Element>, includeStructures = true) =>
+    $links
+      .toArray()
+      .map((link) => $(link))
+      .map(($link) => referenceFromLink($link, includeStructures))
+      .filter(O.isSome)
+      .map((ref) => ref.value);
+
 export const referenceFromLink = (
   $link: Cheerio.Cheerio<Cheerio.Element>,
   includeStructures = true,

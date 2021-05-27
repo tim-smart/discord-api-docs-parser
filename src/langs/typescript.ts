@@ -239,8 +239,15 @@ export interface ${plural} {
 }`;
 };
 
-const alias = ({ identifier, nullable, types, array = false }: Alias) => {
-  const type = types.map(typeIdentifier).join(" & ");
+const alias = ({
+  identifier,
+  nullable,
+  types,
+  array = false,
+  combinator = "and",
+}: Alias) => {
+  const op = combinator === "or" ? "|" : "&";
+  const type = types.map(typeIdentifier).join(` ${op} `);
   return `export type ${identifier} = (${type}${nullable ? " | null" : ""})${
     array ? "[]" : ""
   };`;
