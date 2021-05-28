@@ -6,7 +6,7 @@ import * as Common from "./common";
 import * as Arr from "fp-ts/Array";
 
 export const enumSuffixR =
-  /(behaviors|enum|events|features|level|modes|opcodes|tier|types?)$/i;
+  /(behaviors|enum|events|features|level|modes|opcodes|styles|tier|types?)$/i;
 
 export const fromDocument = ($: Cheerio.CheerioAPI): Enum[] =>
   $("h2, h6")

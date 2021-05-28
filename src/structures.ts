@@ -242,6 +242,7 @@ export const referenceFromLink = (
             O.map((ref) => ref.replace(/^.*-object-/, "")),
             O.map((ref) => ref.replace(/^data-models-/, "")),
             O.map((ref) => ref.replace(/^update-status-/, "")),
+            O.map((ref) => ref.replace(/^buttons-/, "")),
             O.map(Enums.identifier),
           ),
         ),
