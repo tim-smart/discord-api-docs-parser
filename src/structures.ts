@@ -114,13 +114,22 @@ export const type = (
   };
 };
 
-const sanitizeIdentifier = (text: string) =>
+const sanitizeIdentifier = (text: string): string =>
   F.pipe(
     O.some(text),
 
     // Snowflake?
     O.filter((text) => /\b(snowflake|object id)/.test(text)),
     O.map(() => "snowflake"),
+
+    // Array of
+    O.alt(() =>
+      F.pipe(
+        O.fromNullable(text.match(/^(?:array|list) of (\w*)$/)),
+        O.map((matches) => matches[1]),
+        O.map(sanitizeIdentifier),
+      ),
+    ),
 
     // String?
     O.alt(() =>
