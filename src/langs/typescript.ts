@@ -142,7 +142,9 @@ const flagsValue = ({
 };
 
 const endpoints = (routes: Endpoint[]) => {
-  const props = routes.map(endpoint).join("\n");
+  const objects = routes.map(endpoint);
+  const methods = objects.map(({ method }) => method).join("\n");
+  const types = objects.map(({ type }) => type).join("\n");
 
   return `export type Route<P, O> = {
       method: string;
@@ -150,9 +152,12 @@ const endpoints = (routes: Endpoint[]) => {
       params?: P;
       options?: O;
     };
-    export function createRoutes<O = any>(fetch: <R, P>(route: Route<P, O>) => Promise<R>) {
+    export interface Endpoints<O> {
+      ${types}
+    }
+    export function createRoutes<O = any>(fetch: <R, P>(route: Route<P, O>) => Promise<R>): Endpoints<O> {
       return {
-        ${props}
+        ${methods}
       };
     }`;
 };
@@ -172,7 +177,15 @@ const endpoint = ({
         .map((param) => param.replace(/[{}]/, ""))
         .map((param) => Common.typeify(param, false)),
     ),
+  );
+  const urlParamsTyped = F.pipe(
+    urlParams,
     O.map((params) => params.join(": string, ") + ": string, "),
+    O.getOrElse(() => ""),
+  );
+  const urlParamsPlain = F.pipe(
+    urlParams,
+    O.map((params) => params.join(", ") + ", "),
     O.getOrElse(() => ""),
   );
   const urlTemplate = url.replace(
@@ -189,10 +202,6 @@ const endpoint = ({
     paramsType,
     O.map((type) => `params: ${type}, `),
     O.getOrElse(() => ""),
-  );
-  const paramsForFetch = F.pipe(
-    paramsType,
-    O.getOrElse(() => "any"),
   );
   const responseType = F.pipe(
     response,
@@ -213,11 +222,16 @@ const endpoint = ({
     O.getOrElse(() => ""),
   );
 
-  return `${comment}${route}: (${urlParams}${paramsArg}options?: O) => fetch<${responseType}, ${paramsForFetch}>({
+  return {
+    method: `${route}: (${urlParamsPlain}${
+      paramsArg ? "params, " : ""
+    }options) => fetch({
       method: "${method}",
       url: \`${urlTemplate}\`,${paramsArg ? "\nparams," : ""}
       options,
-    }),`;
+    }),`,
+    type: `${comment}${route}: (${urlParamsTyped}${paramsArg}options?: O) => Promise<${responseType}>;`,
+  };
 };
 
 const gateway = ({ identifier, values }: GatewaySection) => {
