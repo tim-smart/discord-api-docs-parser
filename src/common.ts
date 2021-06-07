@@ -36,6 +36,7 @@ const remaps: Record<string, string> = {
   Filecontent: "string",
   GetGateway: "mixed",
   Guildapplicationcommandpermission: "GuildApplicationCommandPermission",
+  InteractionRequestType: "InteractionType",
   ImageDatum: "string",
   Object: "mixed",
   Presence: "PresenceUpdateEvent",

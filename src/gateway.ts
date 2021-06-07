@@ -87,7 +87,7 @@ const event = (markdown: string): O.Option<GatewayEvent> => {
   const heading = markdown.split("\n")[0].trim();
   return F.pipe(
     O.fromNullable(
-      /(Inner payload is|The inner payload) .*?[.:]/.exec(markdown),
+      /(Inner payload is|The inner payload) .*?[.:\n]/.exec(markdown),
     ),
     O.map((md) => Cheerio.load(Marked.parse(md[0]))),
     O.map(($) => $("a")),

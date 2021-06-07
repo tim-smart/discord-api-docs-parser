@@ -230,54 +230,54 @@ export const referenceFromLink = (
     O.chainNullableK(($link) => $link.attr("href")),
     O.filter((href) => !/wikipedia/.test(href)),
     O.chainNullableK(F.flow((href) => href.split("/"), R.last)),
+    O.chain(referenceFromSegment(includeStructures)),
+  );
 
-    O.chain((ref) =>
+const referenceFromSegment = (includeStructures: boolean) => (ref: string) =>
+  F.pipe(
+    // Structures
+    O.some(ref),
+    O.filter(() => includeStructures),
+    O.filter((ref) => !excludeR.test(ref)),
+    O.map((ref) => ref.replace(/^.*-object-/, "")),
+    // Misc clean up
+    O.map((ref) => ref.replace(/^data-models-/, "")),
+    O.map((ref) => ref.replace(/identify-identify/, "identify")),
+    O.map(identifier),
+
+    // Enum
+    O.alt(() =>
       F.pipe(
-        // Structures
+        O.some(ref),
+        O.filter((ref) => Enums.enumSuffixR.test(ref)),
+        O.map((ref) => ref.replace(/^.*-object-/, "")),
+        O.map((ref) => ref.replace(/^data-models-/, "")),
+        O.map((ref) => ref.replace(/^update-status-/, "")),
+        O.map((ref) => ref.replace(/^buttons-/, "")),
+        O.map(Enums.identifier),
+      ),
+    ),
+
+    // Objects
+    O.alt(() =>
+      F.pipe(
         O.some(ref),
         O.filter(() => includeStructures),
-        O.filter((ref) => !excludeR.test(ref)),
-        O.map((ref) => ref.replace(/^.*-object-/, "")),
-        // Misc clean up
+        O.filter((ref) => /-object$/.test(ref)),
         O.map((ref) => ref.replace(/^data-models-/, "")),
-        O.map((ref) => ref.replace(/identify-identify/, "identify")),
-        O.map(identifier),
+        O.map((ref) => ref.replace(/-object$/, "")),
+        O.map(Common.typeify),
+        O.map(Common.maybeRename),
+      ),
+    ),
 
-        // Enum
-        O.alt(() =>
-          F.pipe(
-            O.some(ref),
-            O.filter((ref) => Enums.enumSuffixR.test(ref)),
-            O.map((ref) => ref.replace(/^.*-object-/, "")),
-            O.map((ref) => ref.replace(/^data-models-/, "")),
-            O.map((ref) => ref.replace(/^update-status-/, "")),
-            O.map((ref) => ref.replace(/^buttons-/, "")),
-            O.map(Enums.identifier),
-          ),
-        ),
-
-        // Objects
-        O.alt(() =>
-          F.pipe(
-            O.some(ref),
-            O.filter(() => includeStructures),
-            O.filter((ref) => /-object$/.test(ref)),
-            O.map((ref) => ref.replace(/^data-models-/, "")),
-            O.map((ref) => ref.replace(/-object$/, "")),
-            O.map(Common.typeify),
-            O.map(Common.maybeRename),
-          ),
-        ),
-
-        // Everything else
-        O.alt(() =>
-          F.pipe(
-            O.some(ref),
-            O.filter(() => includeStructures),
-            O.map(Common.typeify),
-            O.map(Common.maybeRename),
-          ),
-        ),
+    // Everything else
+    O.alt(() =>
+      F.pipe(
+        O.some(ref),
+        O.filter(() => includeStructures),
+        O.map(Common.typeify),
+        O.map(Common.maybeRename),
       ),
     ),
   );

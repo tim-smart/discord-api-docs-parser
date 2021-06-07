@@ -66,6 +66,7 @@ export const parse = (repoPath: string) => {
       RxO.flatMap(([_file, [$]]) => Structures.fromDocument($)),
       RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
     ),
+
     endpoints$.pipe(
       RxO.map(({ params }) =>
         F.pipe(
