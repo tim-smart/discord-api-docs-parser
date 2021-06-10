@@ -83,7 +83,7 @@ export const field = (
   $description: Cheerio.Cheerio<Cheerio.Element>,
 ) => {
   const name = $name.text().replace(/\*/g, "").trim();
-  const identifier = name.replace(/\?/g, "");
+  const identifier = name.replace(/\?/g, "").match(/^[A-Za-z_$]+/)![0];
   const optional = /\?$/.test(name);
 
   return {
