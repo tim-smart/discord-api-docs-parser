@@ -12,6 +12,11 @@ import * as Common from "../common";
 import Prettier from "prettier";
 import { Alias } from "../aliases";
 
+interface Chunk {
+  identifier: string;
+  source: string;
+}
+
 export const generate = ({
   endpoints$,
   structures$,
@@ -36,40 +41,53 @@ export const generate = ({
       // Endpoint routes
       endpoints$.pipe(
         RxO.toArray(),
-        RxO.map((routes) => endpoints(routes)),
+        RxO.flatMap((routes) => endpoints(routes)),
       ),
 
       enums$.pipe(RxO.map(enumerable)),
       flags$.pipe(RxO.map(flags)),
-      gateway$.pipe(RxO.map(gateway)),
+      gateway$.pipe(RxO.flatMap(gateway)),
       aliases$.pipe(RxO.map(alias)),
     ),
     RxO.toArray(),
-    RxO.map((chunks) => chunks.join("\n")),
+    RxO.map((chunks) =>
+      chunks
+        .sort((a, b) => a.identifier.localeCompare(b.identifier))
+        .map((c) => c.source)
+        .join("\n"),
+    ),
     RxO.map((source) => Prettier.format(source, { parser: "typescript" })),
 
     (ob) => Rx.lastValueFrom(ob),
   );
 
-const snowflake = () => `export type Snowflake = \`\${bigint}\``;
+const snowflake = (): Chunk => ({
+  identifier: "Snowflake",
+  source: `export type Snowflake = \`\${bigint}\``,
+});
 
-const gatewayPayload = () => `export interface GatewayPayload<T = any | null> {
+const gatewayPayload = (): Chunk => ({
+  identifier: "GatewayPayload",
+  source: `export interface GatewayPayload<T = any | null> {
   /** opcode for the payload */
-  op: GatewayOpcode;
-  /** event data */
-  d?: T;
+      op: GatewayOpcode;
+    /** event data */
+    d?: T;
   /** sequence number, used for resuming sessions and heartbeats */
-  s?: number | null;
-  /** the event name for this payload */
-  t?: string | null;
-}`;
+      s?: number | null;
+    /** the event name for this payload */
+        t?: string | null;
+}`,
+});
 
-const structure = (s: Structure) => {
+const structure = (s: Structure): Chunk => {
   const fields = s.fields.map(structureField).join("\n");
-
-  return `export interface ${s.identifier} {
+  return {
+    identifier: s.identifier,
+    source: `export interface ${s.identifier} {
     ${fields}
-  }`;
+  }`,
+  };
 };
 
 const structureField = ({
@@ -106,9 +124,12 @@ const typeIdentifier = (name: string) => {
 const maybeSnowflakeMap = (isMap: boolean) => (input: string) =>
   isMap ? `Record<Snowflake, ${input}>` : input;
 
-const enumerable = (e: Enum) => `export enum ${e.identifier} {
+const enumerable = (e: Enum): Chunk => ({
+  identifier: e.identifier,
+  source: `export enum ${e.identifier} {
   ${e.values.map(enumerableValue).join("\n")}
-};`;
+};`,
+});
 
 const enumerableValue = ({ name, value, description }: Enum["values"][0]) => {
   const comment = F.pipe(
@@ -119,9 +140,12 @@ const enumerableValue = ({ name, value, description }: Enum["values"][0]) => {
   return `${comment}${name} = ${value},`;
 };
 
-const flags = (f: Flags) => `export const ${f.identifier} = {
+const flags = (f: Flags): Chunk => ({
+  identifier: f.identifier,
+  source: `export const ${f.identifier} = {
   ${f.values.map(flagsValue).join("\n")}
-} as const;`;
+} as const;`,
+});
 
 const flagsValue = ({
   name,
@@ -141,25 +165,36 @@ const flagsValue = ({
   return `${comment}${name}: ${left} << ${right},`;
 };
 
-const endpoints = (routes: Endpoint[]) => {
+const endpoints = (routes: Endpoint[]): Chunk[] => {
   const objects = routes.map(endpoint);
   const methods = objects.map(({ method }) => method).join("\n");
   const types = objects.map(({ type }) => type).join("\n");
 
-  return `export type Route<P, O> = {
+  return [
+    {
+      identifier: "Route",
+      source: `export type Route<P, O> = {
       method: string;
       url: string;
       params?: P;
       options?: O;
-    };
-    export interface Endpoints<O> {
+    };`,
+    },
+    {
+      identifier: "Endpoints",
+      source: `export interface Endpoints<O> {
       ${types}
-    }
-    export function createRoutes<O = any>(fetch: <R, P>(route: Route<P, O>) => Promise<R>): Endpoints<O> {
+    }`,
+    },
+    {
+      identifier: "createRoutes",
+      source: `export function createRoutes<O = any>(fetch: <R, P>(route: Route<P, O>) => Promise<R>): Endpoints<O> {
       return {
         ${methods}
       };
-    }`;
+    }`,
+    },
+  ];
 };
 
 const endpoint = ({
@@ -234,17 +269,25 @@ const endpoint = ({
   };
 };
 
-const gateway = ({ identifier, values }: GatewaySection) => {
+const gateway = ({ identifier, values }: GatewaySection): Chunk[] => {
   const plural = `${identifier}s`;
   const union = values.map(({ type }) => type).join(" | ");
   const props = values
     .map(({ name, type }) => `"${name}": ${type};`)
     .join("\n");
 
-  return `export type ${identifier} = ${union};
-export interface ${plural} {
-  ${props}
-}`;
+  return [
+    {
+      identifier,
+      source: `export type ${identifier} = ${union};`,
+    },
+    {
+      identifier: plural,
+      source: `export interface ${plural} {
+        ${props}
+      }`,
+    },
+  ];
 };
 
 const alias = ({
@@ -253,10 +296,13 @@ const alias = ({
   types,
   array = false,
   combinator = "and",
-}: Alias) => {
+}: Alias): Chunk => {
   const op = combinator === "or" ? "|" : "&";
   const type = types.map(typeIdentifier).join(` ${op} `);
-  return `export type ${identifier} = (${type}${nullable ? " | null" : ""})${
-    array ? "[]" : ""
-  };`;
+  return {
+    identifier,
+    source: `export type ${identifier} = (${type}${nullable ? " | null" : ""})${
+      array ? "[]" : ""
+    };`,
+  };
 };
