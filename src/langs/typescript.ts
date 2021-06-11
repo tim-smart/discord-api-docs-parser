@@ -41,6 +41,9 @@ export const generate = ({
       // Endpoint routes
       endpoints$.pipe(
         RxO.toArray(),
+        RxO.map((routes) =>
+          routes.sort((a, b) => a.route.localeCompare(b.route)),
+        ),
         RxO.flatMap((routes) => endpoints(routes)),
       ),
 
