@@ -68,12 +68,16 @@ export const parse = (repoPath: string) => {
     ),
 
     endpoints$.pipe(
-      RxO.map(({ params }) =>
+      RxO.flatMap(({ params, response }) => [
         F.pipe(
           params,
           O.map(({ structures }) => structures),
         ),
-      ),
+        F.pipe(
+          response,
+          O.map(({ structures }) => structures),
+        ),
+      ]),
       RxO.filter(O.isSome),
       RxO.flatMap((params) => params.value),
       RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
@@ -109,7 +113,7 @@ export const parse = (repoPath: string) => {
       ),
     ),
     endpoints$.pipe(
-      RxO.map(({ params }) => params),
+      RxO.flatMap(({ params, response }) => [params, response]),
       RxO.filter(O.isSome),
       RxO.map((p) => p.value),
       RxO.filter(({ structures }) => structures.length > 1),

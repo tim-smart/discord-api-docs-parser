@@ -243,14 +243,10 @@ const endpoint = ({
   );
   const responseType = F.pipe(
     response,
-    O.map(({ ref, array }) => {
-      const refOrAny = F.pipe(
-        ref,
-        O.map(typeIdentifier),
-        O.getOrElse(() => "any"),
-      );
-      return `${refOrAny}${array ? "[]" : ""}`;
-    }),
+    O.map(
+      ({ identifier, array }) =>
+        `${typeIdentifier(identifier)}${array ? "[]" : ""}`,
+    ),
     O.getOrElse(() => "any"),
   );
 

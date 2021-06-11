@@ -20,18 +20,11 @@ export const isEndpointSection = (section: string[]) =>
   endpointR.test(section[0]);
 
 export const fromSection = (section: string[]) => {
-  const markdown = `## ${section.join("\r\n")}`;
+  const markdown = `## ${section.join("\n")}`;
   const $ = Cheerio.load(Marked(markdown));
 
   const match = section[0].match(endpointR)!;
   const route = identifier(match[1]);
-
-  const response = F.pipe(
-    section.join(" ").match(/\breturns .*?\./gi),
-    O.fromNullable,
-    O.map((m) => m.join(" ")),
-    O.map(parseResponse),
-  );
 
   return {
     route,
@@ -39,7 +32,7 @@ export const fromSection = (section: string[]) => {
     method: match[2],
     url: url(match[3]),
     params: params($, markdown, route, !/get|delete/i.test(match[2])),
-    response,
+    response: response($, section.join(" "), route),
   };
 };
 
@@ -56,17 +49,6 @@ export const url = (raw: string) =>
       (param) => `{${param}}`,
     ),
   );
-
-export const parseResponse = (markdown: string) => {
-  const $ = Cheerio.load(Marked(markdown));
-  const ref = Structures.referenceFromLinks($("a"));
-  const array = /array|list/.test(markdown);
-
-  return {
-    ref,
-    array,
-  };
-};
 
 export interface EndpointParams {
   identifier: string;
@@ -130,3 +112,48 @@ export const description = ($: Cheerio.CheerioAPI) =>
     O.filter(($p) => $p.length > 0),
     O.map(($p) => $p.text().trim()),
   );
+
+export const response = (
+  $: Cheerio.CheerioAPI,
+  markdown: string,
+  route: string,
+): O.Option<EndpointParams> => {
+  const returns = F.pipe(
+    O.fromNullable(markdown.match(/\breturns .*?\./gi)),
+    O.map((m) => m.join(" ")),
+    O.chain(parseResponse),
+  );
+
+  return F.pipe(
+    Structures.fromDocument($, /zzz/, /response/i),
+    Arr.map((structure) => {
+      const identifier = Common.typeify(route);
+      return {
+        ...structure,
+        identifier: `${identifier}Response`,
+      };
+    }),
+    O.fromPredicate((s) => s.length > 0),
+    O.map((structures) => ({
+      identifier: `${Common.typeify(route)}Response`,
+      array: false,
+      structures,
+    })),
+    O.alt(() => returns),
+  );
+};
+
+export const parseResponse = (markdown: string): O.Option<EndpointParams> => {
+  const $ = Cheerio.load(Marked(markdown));
+  const identifier = Structures.referenceFromLinks($("a"));
+  const array = /array|list/.test(markdown);
+
+  return F.pipe(
+    identifier,
+    O.map((identifier) => ({
+      identifier,
+      array,
+      structures: [],
+    })),
+  );
+};
