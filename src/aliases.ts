@@ -24,6 +24,12 @@ export const list: Alias[] = [
     types: ["ApplicationCommand", "ApplicationCommandExtra"],
   },
   {
+    identifier: "Component",
+    nullable: false,
+    combinator: "or",
+    types: ["ActionRow", "Button", "SelectMenu"],
+  },
+  {
     identifier: "GuildMemberAddEvent",
     nullable: false,
     types: ["GuildMember", "GuildMemberAddExtra"],

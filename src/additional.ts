@@ -28,4 +28,31 @@ export const structures = (): Structure[] => [
       },
     ],
   },
+  {
+    identifier: "ActionRow",
+    fields: [
+      {
+        name: "type",
+        optional: false,
+        type: {
+          identifier: "ComponentType",
+          nullable: false,
+          array: false,
+          snowflakeMap: false,
+        },
+        description: "component type",
+      },
+      {
+        name: "components",
+        optional: false,
+        type: {
+          identifier: "Component",
+          nullable: false,
+          array: true,
+          snowflakeMap: false,
+        },
+        description: "a list of child components",
+      },
+    ],
+  },
 ];
