@@ -187,7 +187,9 @@ const sanitizeIdentifier = (text: string): string =>
     // Mixed
     O.alt(() =>
       F.pipe(
-        O.fromNullable(text.match(/mixed|\bOptionType\b/)),
+        O.fromNullable(
+          text.match(/mixed|\bOptionType\b|application command option type/),
+        ),
         O.map(() => "mixed"),
       ),
     ),
