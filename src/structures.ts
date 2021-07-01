@@ -17,7 +17,7 @@ const isStructureTable =
     return field && type && description;
   };
 
-export const excludeR = /(%|example|params|json|type|change key)/i;
+export const excludeR = /(%|example|params|json|type|change key|flag)/i;
 
 const headerSelectors = ["h2", "h6", "#client-status-object"];
 
