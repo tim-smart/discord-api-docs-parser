@@ -1,5 +1,6 @@
 import * as Cheerio from "cheerio";
 import * as F from "fp-ts/function";
+import * as Arr from "fp-ts/Array";
 import * as O from "fp-ts/Option";
 import * as R from "remeda";
 import * as Common from "./common";
@@ -231,7 +232,13 @@ export const referenceFromLink = (
     O.some($link),
     O.chainNullableK(($link) => $link.attr("href")),
     O.filter((href) => !/wikipedia/.test(href)),
-    O.chainNullableK(F.flow((href) => href.split("/"), R.last)),
+    O.chain(
+      F.flow(
+        (href) => href.split("/"),
+        Arr.last,
+        O.filter((s) => s.length > 0),
+      ),
+    ),
     O.chain(referenceFromSegment(includeStructures)),
   );
 
