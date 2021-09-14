@@ -9,19 +9,14 @@ export interface Alias {
 export const list: Alias[] = [
   { identifier: "Heartbeat", nullable: true, types: ["integer"] },
   {
-    identifier: "ApplicationCommandCreateEvent",
+    identifier: "IntegrationCreateEvent",
     nullable: false,
-    types: ["ApplicationCommand", "ApplicationCommandExtra"],
+    types: ["Integration", "IntegrationCreateEventAdditional"],
   },
   {
-    identifier: "ApplicationCommandUpdateEvent",
+    identifier: "IntegrationUpdateEvent",
     nullable: false,
-    types: ["ApplicationCommand", "ApplicationCommandExtra"],
-  },
-  {
-    identifier: "ApplicationCommandDeleteEvent",
-    nullable: false,
-    types: ["ApplicationCommand", "ApplicationCommandExtra"],
+    types: ["Integration", "IntegrationUpdateEventAdditional"],
   },
   {
     identifier: "Component",

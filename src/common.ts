@@ -42,6 +42,7 @@ const remaps: Record<string, string> = {
   Presence: "PresenceUpdateEvent",
   PresenceUpdate: "PresenceUpdateEvent",
   Messageinteraction: "MessageInteraction",
+  UpdatePresenceStatusType: "StatusType",
 
   // Gateway commands
   GuildRequestMember: "RequestGuildMember",
