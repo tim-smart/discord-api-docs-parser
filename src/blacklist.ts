@@ -1,1 +1,6 @@
-export const list = ["CommandsAndEvent", "Component", "GatewayEvent"];
+export const list = [
+  "CommandsAndEvent",
+  "Component",
+  "FieldRequirementsByEntityType",
+  "GatewayEvent",
+];
