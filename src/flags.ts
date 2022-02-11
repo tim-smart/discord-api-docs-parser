@@ -6,31 +6,32 @@ import * as Common from "./common";
 
 const flagSuffixR = /\bflags$/i;
 
-export const fromDocument = ($: Cheerio.CheerioAPI): Flags[] =>
+export const fromDocument = ($: Cheerio.CheerioAPI, file: string): Flags[] =>
   $("h6")
     .filter((_, h6) => flagSuffixR.test($(h6).text()))
     .filter((_, el) => Common.hasTable($(el)))
-    .map((_, h6) => fromHeader($)($(h6)))
+    .map((_, h6) => fromHeader($, file)($(h6)))
     .toArray();
 
 export const fromHeader =
-  ($: Cheerio.CheerioAPI) => ($h6: Cheerio.Cheerio<Cheerio.Element>) => {
+  ($: Cheerio.CheerioAPI, file: string) =>
+  ($h6: Cheerio.Cheerio<Cheerio.Element>) => {
     const $table = Common.table($h6);
 
     return {
-      identifier: identifier($h6.text()),
+      identifier: identifier(file)($h6.text()),
       values: values($)($table),
     };
   };
 
 export type Flags = ReturnType<ReturnType<typeof fromHeader>>;
 
-export const identifier = (heading: string) =>
+export const identifier = (file: string) => (heading: string) =>
   F.pipe(
     heading.trim(),
     (text) => text.replace(/bitwise/i, ""),
     Common.typeify,
-    Common.maybeRename,
+    Common.maybeRename(file),
   );
 
 export const values =

@@ -59,7 +59,7 @@ export const generate = ({
         .map((c) => c.source)
         .join("\n"),
     ),
-    RxO.map((source) => Prettier.format(source, { parser: "typescript" })),
+    // RxO.map((source) => Prettier.format(source, { parser: "typescript" })),
 
     (ob) => Rx.lastValueFrom(ob),
   );

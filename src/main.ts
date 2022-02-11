@@ -56,14 +56,14 @@ export const parse = (repoPath: string) => {
   );
 
   const endpoints$ = filteredDocs$.pipe(
-    RxO.flatMap(([_file, [_, md]]) => Endpoints.fromDocument(md)),
+    RxO.flatMap(([file, [_, md]]) => Endpoints.fromDocument(md, file)),
   );
 
   const structures$ = Rx.merge(
     Rx.from(Additional.structures()),
 
     filteredDocs$.pipe(
-      RxO.flatMap(([_file, [$]]) => Structures.fromDocument($)),
+      RxO.flatMap(([file, [$]]) => Structures.fromDocument($, { file })),
       RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
     ),
 
@@ -89,14 +89,14 @@ export const parse = (repoPath: string) => {
 
   const flags$ = Rx.merge(
     filteredDocs$.pipe(
-      RxO.flatMap(([_file, [$]]) => Flags.fromDocument($)),
+      RxO.flatMap(([file, [$]]) => Flags.fromDocument($, file)),
       RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
     ),
     gatewayDocs$.pipe(RxO.flatMap(([_file, [$]]) => Gateway.intents($))),
   );
 
   const enums$ = filteredDocs$.pipe(
-    RxO.flatMap(([_file, [$]]) => Enums.fromDocument($)),
+    RxO.flatMap(([file, [$]]) => Enums.fromDocument($, file)),
     RxO.filter(({ identifier }) => !Blacklist.list.includes(identifier)),
   );
 

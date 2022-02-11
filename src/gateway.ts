@@ -91,7 +91,7 @@ const event = (markdown: string): O.Option<GatewayEvent> => {
     ),
     O.map((md) => Cheerio.load(Marked.parse(md[0]))),
     O.map(($) => $("a")),
-    O.chain(($links) => Structures.referenceFromLinks($links)),
+    O.chain(($links) => Structures.referenceFromLinks("")($links)),
     O.map((ref) => ({
       identifier: Common.typeify(`${heading} Event`),
       payload: ref,

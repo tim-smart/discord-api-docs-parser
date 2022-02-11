@@ -6,25 +6,25 @@ import Marked from "marked";
 import * as Structures from "./structures";
 import * as Arr from "fp-ts/Array";
 
-export const fromDocument = (markdown: string): Endpoint[] =>
+export const fromDocument = (markdown: string, file: string): Endpoint[] =>
   markdown
     .replace(/\r\n/, "\n")
     .split(/(^|\n)##\s+/)
     .map((section) => section.split("\n"))
     .filter(isEndpointSection)
-    .map((section) => fromSection(section));
+    .map(fromSection(file));
 
 const endpointR = /(.*) % (get|post|put|patch|delete) (.*)$/i;
 
 export const isEndpointSection = (section: string[]) =>
   endpointR.test(section[0]);
 
-export const fromSection = (section: string[]) => {
+export const fromSection = (file: string) => (section: string[]) => {
   const markdown = `## ${section.join("\n")}`;
   const $ = Cheerio.load(Marked(markdown));
 
   const match = section[0].match(endpointR)!;
-  const route = identifier(match[1]);
+  const route = identifier(file)(match[1]);
 
   return {
     route,
@@ -36,10 +36,10 @@ export const fromSection = (section: string[]) => {
   };
 };
 
-export type Endpoint = ReturnType<typeof fromSection>;
+export type Endpoint = ReturnType<ReturnType<typeof fromSection>>;
 
-export const identifier = (heading: string) =>
-  F.pipe(heading.trim(), Common.camelify);
+export const identifier = (file: string) => (heading: string) =>
+  F.pipe(heading.trim(), Common.camelify, Common.maybeRename(file));
 
 export const url = (raw: string) =>
   raw.replace(
@@ -68,7 +68,7 @@ export const params = (
     O.map((md) => [Cheerio.load(Marked(md)), /array|list/.test(md)] as const),
     O.chain(([$, array]) =>
       F.pipe(
-        Structures.referenceFromLinks($("a")),
+        Structures.referenceFromLinks("")($("a")),
         O.map((identifier) => ({
           identifier,
           array,
@@ -79,7 +79,7 @@ export const params = (
   );
 
   return F.pipe(
-    Structures.fromDocument($, /zzz/, /params/i),
+    Structures.fromDocument($, { exclude: /zzz/, include: /params/i }),
     Arr.filter(({ identifier }) =>
       hasBody ? !/querystring/i.test(identifier) : !/json/i.test(identifier),
     ),
@@ -125,7 +125,7 @@ export const response = (
   );
 
   return F.pipe(
-    Structures.fromDocument($, /zzz/, /response/i),
+    Structures.fromDocument($, { exclude: /zzz/, include: /response/i }),
     Arr.map((structure) => {
       const identifier = Common.typeify(route);
       return {
@@ -145,7 +145,7 @@ export const response = (
 
 export const parseResponse = (markdown: string): O.Option<EndpointParams> => {
   const $ = Cheerio.load(Marked(markdown));
-  const identifier = Structures.referenceFromLinks($("a"));
+  const identifier = Structures.referenceFromLinks("")($("a"));
   const array = /array|list/.test(markdown);
 
   return F.pipe(

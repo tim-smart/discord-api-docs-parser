@@ -22,6 +22,20 @@ export const typeify = (input: string, caps = true) =>
     pluralize.singular,
   );
 
+const fileRemaps: Record<string, Record<string, string>> = {
+  "resources/Guild.md": {
+    listActiveThreads: "listGuildActiveThreads",
+  },
+};
+
+const fileHeadingRemaps: Record<string, Record<string, string>> = {
+  "interactions/Receiving_and_Responding.md": {
+    Autocomplete: "InteractionCallbackAutocomplete",
+    Message: "InteractionCallbackMessage",
+    Modal: "InteractionCallbackModal",
+  },
+};
+
 const remaps: Record<string, string> = {
   Allowedmention: "AllowedMention",
   Applicationcommand: "ApplicationCommand",
@@ -43,6 +57,8 @@ const remaps: Record<string, string> = {
   PresenceUpdate: "PresenceUpdateEvent",
   Messageinteraction: "MessageInteraction",
   UpdatePresenceStatusType: "StatusType",
+  TextInputsTextInputStyle: "TextInputStyle",
+  MessageComponent: "Component",
 
   // Gateway commands
   GuildRequestMember: "RequestGuildMember",
@@ -54,14 +70,23 @@ const remaps: Record<string, string> = {
   // Gateway events
   Hello: "HelloEvent",
 };
-export const maybeRename = (id: string) =>
+export const maybeRename =
+  (file: string, heading = false) =>
+  (id: string) =>
+    F.pipe(
+      O.fromNullable(fileRemaps[file]?.[id]),
+      O.alt(() => O.fromNullable(remaps[id])),
+      O.getOrElse(() => id),
+      heading ? maybeRenameHeading(file) : F.identity,
+    );
+export const maybeRenameHeading = (file: string) => (id: string) =>
   F.pipe(
-    O.fromNullable(remaps[id]),
+    O.fromNullable(fileHeadingRemaps[file]?.[id]),
     O.getOrElse(() => id),
   );
 
 export const constantify = (input: string) =>
-  S(input.replace(/[^A-z1-9 ]/, ""))
+  S(input.replace(/[^A-z1-9 ]/g, ""))
     .underscore()
     .s.toUpperCase();
 

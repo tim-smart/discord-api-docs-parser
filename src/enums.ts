@@ -8,31 +8,32 @@ import * as Arr from "fp-ts/Array";
 export const enumSuffixR =
   /(behaviors|enum|events|features|level|modes|opcodes|status|styles|tier|types?)$/i;
 
-export const fromDocument = ($: Cheerio.CheerioAPI): Enum[] =>
+export const fromDocument = ($: Cheerio.CheerioAPI, file: string): Enum[] =>
   $("h2, h6")
     .filter((_, h6) => enumSuffixR.test($(h6).text()))
     .filter((_, el) => Common.hasTable($(el)))
-    .map((_, h6) => fromHeader($)($(h6)))
+    .map((_, h6) => fromHeader($, file)($(h6)))
     .toArray();
 
 export const fromHeader =
-  ($: Cheerio.CheerioAPI) => ($h6: Cheerio.Cheerio<Cheerio.Element>) => {
+  ($: Cheerio.CheerioAPI, file: string) =>
+  ($h6: Cheerio.Cheerio<Cheerio.Element>) => {
     const $table = Common.table($h6);
 
     return {
-      identifier: identifier($h6.text()),
+      identifier: identifier(file)($h6.text()),
       values: values($)($table),
     };
   };
 
 export type Enum = ReturnType<ReturnType<typeof fromHeader>>;
 
-export const identifier = (heading: string) =>
+export const identifier = (file: string) => (heading: string) =>
   F.pipe(
     heading.trim(),
     (heading) => heading.replace(/enum/i, ""),
     Common.typeify,
-    Common.maybeRename,
+    Common.maybeRename(file),
   );
 
 const findValueIndex = Common.columnIndex(["id", "value", "integer", "code"]);

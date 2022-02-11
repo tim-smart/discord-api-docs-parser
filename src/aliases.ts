@@ -19,10 +19,20 @@ export const list: Alias[] = [
     types: ["Integration", "IntegrationUpdateEventAdditional"],
   },
   {
+    identifier: "InteractionCallbackDatum",
+    nullable: false,
+    combinator: "or",
+    types: [
+      "InteractionCallbackAutocomplete",
+      "InteractionCallbackMessage",
+      "InteractionCallbackModal",
+    ],
+  },
+  {
     identifier: "Component",
     nullable: false,
     combinator: "or",
-    types: ["ActionRow", "Button", "SelectMenu"],
+    types: ["ActionRow", "Button", "TextInput", "SelectMenu"],
   },
   {
     identifier: "GuildMemberAddEvent",
