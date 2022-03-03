@@ -43,5 +43,6 @@
     "rxjs": "^7.0.1",
     "string": "^3.3.3",
     "yargs": "^17.0.1"
-  }
+  },
+  "gitHead": "a1c2b8c284a9930bf4f14c99c02eff04fb9b428b"
 }
