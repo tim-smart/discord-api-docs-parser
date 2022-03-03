@@ -28,7 +28,8 @@
     "*.ts": "prettier --write"
   },
   "scripts": {
-    "prepare": "husky install && tsc"
+    "prepare": "husky install && tsc",
+    "publish": "lerna version --conventional-commits --create-release github && lerna publish from-package"
   },
   "dependencies": {
     "@types/yargs": "^17.0.0",
