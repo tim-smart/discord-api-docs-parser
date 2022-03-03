@@ -238,7 +238,7 @@ const endpoint = ({
   );
   const paramsArg = F.pipe(
     paramsType,
-    O.map((type) => `params: ${type}, `),
+    O.map((type) => `params?: ${type}, `),
     O.getOrElse(() => ""),
   );
   const responseType = F.pipe(
