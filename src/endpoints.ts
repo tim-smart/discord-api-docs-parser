@@ -64,6 +64,7 @@ export const params = (
 ): O.Option<EndpointParams> => {
   const takes: O.Option<EndpointParams> = F.pipe(
     O.fromNullable(/\bTakes a.*?\./.exec(markdown)),
+    O.alt(() => O.fromNullable(/\bBody is.*?\./.exec(markdown))),
     O.map((matches) => matches[0]),
     O.map((md) => [Cheerio.load(Marked(md)), /array|list/.test(md)] as const),
     O.chain(([$, array]) =>

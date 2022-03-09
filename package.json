@@ -18,6 +18,7 @@
     "@types/pluralize": "^0.0.29",
     "@types/prettier": "^2.2.3",
     "@types/string": "^0.0.30",
+    "@types/yargs": "^17.0.0",
     "husky": "^6.0.0",
     "lerna": "^4.0.0",
     "lint-staged": "^11.0.0",
@@ -32,7 +33,6 @@
     "lerna-publish": "lerna version --conventional-commits --create-release github && lerna publish from-package"
   },
   "dependencies": {
-    "@types/yargs": "^17.0.0",
     "cheerio": "^1.0.0-rc.9",
     "fp-ts": "^2.10.5",
     "glob-to-regexp": "^0.4.1",
