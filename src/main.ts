@@ -140,3 +140,7 @@ export const parse = (repoPath: string) => {
 };
 
 export type ParseResult = ReturnType<typeof parse>;
+export type Generator = (opts: {
+  result: ParseResult;
+  langOptions: Record<string, string>;
+}) => Promise<string>;

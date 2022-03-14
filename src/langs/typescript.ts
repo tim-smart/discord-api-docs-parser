@@ -2,31 +2,28 @@ import * as F from "fp-ts/function";
 import * as O from "fp-ts/Option";
 import * as Rx from "rxjs";
 import * as RxO from "rxjs/operators";
+import { Alias } from "../aliases";
+import * as Common from "../common";
 import { Endpoint } from "../endpoints";
 import { Enum } from "../enums";
 import { Flags } from "../flags";
-import { ParseResult } from "../main";
-import { Structure } from "../structures";
 import { GatewaySection } from "../gateway";
-import * as Common from "../common";
-import Prettier from "prettier";
-import { Alias } from "../aliases";
+import { Generator } from "../main";
+import { Structure } from "../structures";
 
 interface Chunk {
   identifier: string;
   source: string;
 }
 
-export const generate = ({
-  endpoints$,
-  structures$,
-  enums$,
-  flags$,
-  gateway$,
-  aliases$,
-}: ParseResult) =>
+export const generate: Generator = ({
+  result: { endpoints$, structures$, enums$, flags$, gateway$, aliases$ },
+  langOptions: { imports = "", endpointReturnType = "Promise" },
+}) =>
   F.pipe(
     Rx.merge(
+      Rx.from(importChunks(imports)),
+
       Rx.of(snowflake()),
       Rx.of(gatewayPayload()),
 
@@ -44,7 +41,7 @@ export const generate = ({
         RxO.map((routes) =>
           routes.sort((a, b) => a.route.localeCompare(b.route)),
         ),
-        RxO.flatMap((routes) => endpoints(routes)),
+        RxO.flatMap((routes) => endpoints(routes, endpointReturnType)),
       ),
 
       enums$.pipe(RxO.map(enumerable)),
@@ -63,6 +60,17 @@ export const generate = ({
 
     (ob) => Rx.lastValueFrom(ob),
   );
+
+const importChunks = (s: string): Chunk[] =>
+  s
+    .split(",")
+    .map((s) => s.split("|"))
+    .filter((arr) => arr.length === 2)
+    .map(([identifier, module]) => `import { ${identifier} } from "${module}"`)
+    .map((source) => ({
+      identifier: "__import",
+      source,
+    }));
 
 const snowflake = (): Chunk => ({
   identifier: "Snowflake",
@@ -168,8 +176,8 @@ const flagsValue = ({
   return `${comment}${name}: ${left} << ${right},`;
 };
 
-const endpoints = (routes: Endpoint[]): Chunk[] => {
-  const objects = routes.map(endpoint);
+const endpoints = (routes: Endpoint[], returnType: string): Chunk[] => {
+  const objects = routes.map(endpoint(returnType));
   const methods = objects.map(({ method }) => method).join("\n");
   const types = objects.map(({ type }) => type).join("\n");
 
@@ -191,7 +199,7 @@ const endpoints = (routes: Endpoint[]): Chunk[] => {
     },
     {
       identifier: "createRoutes",
-      source: `export function createRoutes<O = any>(fetch: <R, P>(route: Route<P, O>) => Promise<R>): Endpoints<O> {
+      source: `export function createRoutes<O = any>(fetch: <R, P>(route: Route<P, O>) => ${returnType}<R>): Endpoints<O> {
       return {
         ${methods}
       };
@@ -200,73 +208,68 @@ const endpoints = (routes: Endpoint[]): Chunk[] => {
   ];
 };
 
-const endpoint = ({
-  route,
-  url,
-  description,
-  method,
-  params,
-  response,
-}: Endpoint) => {
-  const urlParams = F.pipe(
-    O.fromNullable(url.match(/\{.*?\}/g)),
-    O.map((params) =>
-      params
-        .map((param) => param.replace(/[{}]/, ""))
-        .map((param) => Common.typeify(param, false)),
-    ),
-  );
-  const urlParamsTyped = F.pipe(
-    urlParams,
-    O.map((params) => params.join(": string, ") + ": string, "),
-    O.getOrElse(() => ""),
-  );
-  const urlParamsPlain = F.pipe(
-    urlParams,
-    O.map((params) => params.join(", ") + ", "),
-    O.getOrElse(() => ""),
-  );
-  const urlTemplate = url.replace(
-    /\{(.*?)\}/g,
-    (_, param) => `\${${Common.typeify(param, false)}}`,
-  );
-  const paramsType = F.pipe(
-    params,
-    O.map(
-      ({ identifier, array }) => `Partial<${identifier}${array ? "[]" : ""}>`,
-    ),
-  );
-  const paramsArg = F.pipe(
-    paramsType,
-    O.map((type) => `params?: ${type}, `),
-    O.getOrElse(() => ""),
-  );
-  const responseType = F.pipe(
-    response,
-    O.map(
-      ({ identifier, array }) =>
-        `${typeIdentifier(identifier)}${array ? "[]" : ""}`,
-    ),
-    O.getOrElse(() => "any"),
-  );
+const endpoint =
+  (returnType: string) =>
+  ({ route, url, description, method, params, response }: Endpoint) => {
+    const urlParams = F.pipe(
+      O.fromNullable(url.match(/\{.*?\}/g)),
+      O.map((params) =>
+        params
+          .map((param) => param.replace(/[{}]/, ""))
+          .map((param) => Common.typeify(param, false)),
+      ),
+    );
+    const urlParamsTyped = F.pipe(
+      urlParams,
+      O.map((params) => params.join(": string, ") + ": string, "),
+      O.getOrElse(() => ""),
+    );
+    const urlParamsPlain = F.pipe(
+      urlParams,
+      O.map((params) => params.join(", ") + ", "),
+      O.getOrElse(() => ""),
+    );
+    const urlTemplate = url.replace(
+      /\{(.*?)\}/g,
+      (_, param) => `\${${Common.typeify(param, false)}}`,
+    );
+    const paramsType = F.pipe(
+      params,
+      O.map(
+        ({ identifier, array }) => `Partial<${identifier}${array ? "[]" : ""}>`,
+      ),
+    );
+    const paramsArg = F.pipe(
+      paramsType,
+      O.map((type) => `params?: ${type}, `),
+      O.getOrElse(() => ""),
+    );
+    const responseType = F.pipe(
+      response,
+      O.map(
+        ({ identifier, array }) =>
+          `${typeIdentifier(identifier)}${array ? "[]" : ""}`,
+      ),
+      O.getOrElse(() => "any"),
+    );
 
-  const comment = F.pipe(
-    description,
-    O.map((d) => `/** ${d} */\n`),
-    O.getOrElse(() => ""),
-  );
+    const comment = F.pipe(
+      description,
+      O.map((d) => `/** ${d} */\n`),
+      O.getOrElse(() => ""),
+    );
 
-  return {
-    method: `${route}: (${urlParamsPlain}${
-      paramsArg ? "params, " : ""
-    }options) => fetch({
+    return {
+      method: `${route}: (${urlParamsPlain}${
+        paramsArg ? "params, " : ""
+      }options) => fetch({
       method: "${method}",
       url: \`${urlTemplate}\`,${paramsArg ? "\nparams," : ""}
       options,
     }),`,
-    type: `${comment}${route}: (${urlParamsTyped}${paramsArg}options?: O) => Promise<${responseType}>;`,
+      type: `${comment}${route}: (${urlParamsTyped}${paramsArg}options?: O) => ${returnType}<${responseType}>;`,
+    };
   };
-};
 
 const gateway = ({ identifier, values }: GatewaySection): Chunk[] => {
   const plural = `${identifier}s`;
