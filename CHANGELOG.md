@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.1](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.3.0...@tim-smart/discord-api-docs-parser@0.3.1) (2022-03-19)
+
+
+### Bug Fixes
+
+* Add remap for bulk commands endpoint ([779856d](https://github.com/tim-smart/discord-api-docs-parser/commit/779856db14dcc6b756a8b99a9a5ec6e8c3c78210))
+
+
+
+
+
 # 0.3.0 (2022-03-14)
 
 
