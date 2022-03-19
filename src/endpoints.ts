@@ -31,7 +31,7 @@ export const fromSection = (file: string) => (section: string[]) => {
     description: description($),
     method: match[2],
     url: url(match[3]),
-    params: params($, markdown, route, !/get|delete/i.test(match[2])),
+    params: params(file, $, markdown, route, !/get|delete/i.test(match[2])),
     response: response($, section.join(" "), route),
   };
 };
@@ -57,6 +57,7 @@ export interface EndpointParams {
 }
 
 export const params = (
+  file: string,
   $: Cheerio.CheerioAPI,
   markdown: string,
   route: string,
@@ -94,12 +95,12 @@ export const params = (
 
       return {
         ...structure,
-        identifier: `${identifier}${variant}Params`,
+        identifier: Common.maybeRename(file)(`${identifier}${variant}Params`),
       };
     }),
     O.fromPredicate((s) => s.length > 0),
     O.map((structures) => ({
-      identifier: `${Common.typeify(route)}Params`,
+      identifier: Common.maybeRename(file)(`${Common.typeify(route)}Params`),
       array: false,
       structures,
     })),
