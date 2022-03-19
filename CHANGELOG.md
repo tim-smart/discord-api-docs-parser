@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.2](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.3.1...@tim-smart/discord-api-docs-parser@0.3.2) (2022-03-19)
+
+
+### Bug Fixes
+
+* rename endpoint identifiers ([9354db8](https://github.com/tim-smart/discord-api-docs-parser/commit/9354db8f8383fe9b710b04dd94f0e36f80e6d92b))
+
+
+
+
+
 ## [0.3.1](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.3.0...@tim-smart/discord-api-docs-parser@0.3.1) (2022-03-19)
 
 
