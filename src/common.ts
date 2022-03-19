@@ -45,6 +45,8 @@ const remaps: Record<string, string> = {
   Applicationcommandpermission: "ApplicationCommandPermission",
   Applicationcommandpermissiontype: "ApplicationCommandPermissionType",
   Binary: "string",
+  BulkOverwriteGuildApplicationCommandBulkApplicationCommandParams:
+    "BulkOverwriteGuildApplicationCommandParams",
   Connecting: "mixed",
   DocsInteractionsMessageComponent: "Component",
   Filecontent: "string",
