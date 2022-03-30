@@ -3,4 +3,6 @@ export const list = [
   "Component",
   "FieldRequirementsByEntityType",
   "GatewayEvent",
+  "FormParam",
+  "QueryStringParam",
 ];
