@@ -127,7 +127,12 @@ export const parse = (repoPath: string) => {
         }),
       ),
     ),
-  ).pipe(RxO.distinct(({ identifier }) => identifier));
+  ).pipe(
+    RxO.filter(
+      ({ identifier }) => Blacklist.aliases.includes(identifier) === false,
+    ),
+    RxO.distinct(({ identifier }) => identifier),
+  );
 
   return {
     aliases$,

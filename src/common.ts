@@ -59,6 +59,8 @@ const remaps: Record<string, string> = {
   PresenceUpdate: "PresenceUpdateEvent",
   Messageinteraction: "MessageInteraction",
   UpdatePresenceStatusType: "StatusType",
+  StartThreadInForumChannelForumThreadMessageParam:
+    "StartThreadInForumChannelForumThreadMessageParams",
   TextInputsTextInputStyle: "TextInputStyle",
   MessageComponent: "Component",
 

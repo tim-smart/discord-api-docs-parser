@@ -81,7 +81,10 @@ export const params = (
   );
 
   return F.pipe(
-    Structures.fromDocument($, { exclude: /zzz/, include: /params/i }),
+    Structures.fromDocument($, {
+      exclude: /zzz/,
+      include: /params/i,
+    }),
     Arr.filter(({ identifier }) =>
       hasBody ? !/querystring/i.test(identifier) : !/json/i.test(identifier),
     ),

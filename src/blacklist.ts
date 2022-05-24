@@ -6,3 +6,5 @@ export const list = [
   "FormParam",
   "QueryStringParam",
 ];
+
+export const aliases = ["StartThreadInForumChannelParams"];
