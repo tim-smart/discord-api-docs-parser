@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.6](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.3.5...@tim-smart/discord-api-docs-parser@0.3.6) (2022-05-24)
+
+
+### Bug Fixes
+
+* GuildCreateExtra update ([1cf02cc](https://github.com/tim-smart/discord-api-docs-parser/commit/1cf02cc4f7ddd4b2c2f11d7cb8d7627eadb1fd33))
+
+
+
+
+
 ## [0.3.5](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.3.4...@tim-smart/discord-api-docs-parser@0.3.5) (2022-05-24)
 
 **Note:** Version bump only for package @tim-smart/discord-api-docs-parser
