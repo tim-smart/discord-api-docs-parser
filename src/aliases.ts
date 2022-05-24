@@ -7,6 +7,11 @@ export interface Alias {
 }
 
 export const list: Alias[] = [
+  {
+    identifier: "GuildCreateEvent",
+    nullable: false,
+    types: ["Guild", "GuildCreateExtra"],
+  },
   { identifier: "Heartbeat", nullable: true, types: ["integer"] },
   {
     identifier: "IntegrationCreateEvent",
