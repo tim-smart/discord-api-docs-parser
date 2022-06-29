@@ -34,6 +34,16 @@ export const list: Alias[] = [
     ],
   },
   {
+    identifier: "InteractionDatum",
+    nullable: false,
+    combinator: "or",
+    types: [
+      "ApplicationCommandDatum",
+      "MessageComponentDatum",
+      "ModalSubmitDatum",
+    ],
+  },
+  {
     identifier: "Component",
     nullable: false,
     combinator: "or",
