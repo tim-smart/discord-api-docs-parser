@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.8](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.3.7...@tim-smart/discord-api-docs-parser@0.3.8) (2022-06-29)
+
+
+### Bug Fixes
+
+* MessageCreateExtra fields ([11481d5](https://github.com/tim-smart/discord-api-docs-parser/commit/11481d5bed57a21ad05b4168628093d74e8c436f))
+
+
+
+
+
 ## [0.3.7](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.3.6...@tim-smart/discord-api-docs-parser@0.3.7) (2022-06-29)
 
 
