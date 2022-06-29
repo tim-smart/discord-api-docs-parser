@@ -55,6 +55,16 @@ export const list: Alias[] = [
     types: ["GuildMember", "GuildMemberAddExtra"],
   },
   { identifier: "InvalidSessionEvent", nullable: false, types: ["boolean"] },
+  {
+    identifier: "MessageCreateEvent",
+    nullable: false,
+    types: ["Message", "MessageCreateExtra"],
+  },
+  {
+    identifier: "MessageUpdateEvent",
+    nullable: false,
+    types: ["MessageCreateEvent"],
+  },
   { identifier: "ResumedEvent", nullable: false, types: ["null"] },
   { identifier: "ReconnectEvent", nullable: false, types: ["null"] },
 ];
