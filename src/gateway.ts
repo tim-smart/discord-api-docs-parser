@@ -8,28 +8,22 @@ import { Flags } from "./flags";
 import * as Structures from "./structures";
 
 export const fromDocument = ($: Cheerio.CheerioAPI): GatewaySection[] =>
-  $("h6")
+  $("h2")
     .toArray()
-    .map(
-      (h6) =>
-        [
-          $(h6 as Cheerio.Element),
-          Common.table($(h6 as Cheerio.Element)),
-        ] as const,
-    )
-    .filter(([$h6]) => /events|commands/i.test($h6.text()))
-    .map(([$h6, $table]) => fromHeader($)($h6, $table));
+    .map((h2) => [$(h2), Common.table($(h2))] as const)
+    .filter(([$h2]) => /send events|receive events/i.test($h2.text()))
+    .map(([$h2, $table]) => fromHeader($)($h2, $table));
 
 const fromHeader =
   ($: Cheerio.CheerioAPI) =>
   (
-    $h6: Cheerio.Cheerio<Cheerio.Element>,
+    $h2: Cheerio.Cheerio<Cheerio.Element>,
     $table: Cheerio.Cheerio<Cheerio.Element>,
   ) => {
-    const identifier = Common.typeify($h6.text().trim());
+    const identifier = Common.typeify($h2.text().trim());
     return {
       identifier,
-      values: values($)($table, /event/i.test(identifier)),
+      values: values($)($table, /receive/i.test(identifier)),
     };
   };
 

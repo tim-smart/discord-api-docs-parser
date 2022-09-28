@@ -38,7 +38,7 @@
     "glob-to-regexp": "^0.4.1",
     "marked": "^2.0.3",
     "pluralize": "^8.0.0",
-    "prettier": "^2.3.0",
+    "prettier": "^2.7.1",
     "remeda": "^0.0.27",
     "rxjs": "^7.0.1",
     "string": "^3.3.3",

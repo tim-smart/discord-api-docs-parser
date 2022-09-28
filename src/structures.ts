@@ -270,6 +270,7 @@ const referenceFromSegment =
       O.map((ref) => ref.replace(/^.*-object-/, "")),
       // Misc clean up
       O.map((ref) => ref.replace(/^data-models-/, "")),
+      O.map((ref) => ref.replace(/^shared-resources-/, "")),
       O.map((ref) => ref.replace(/identify-identify/, "identify")),
       O.map(identifier(file)),
 
@@ -280,6 +281,7 @@ const referenceFromSegment =
           O.filter((ref) => Enums.enumSuffixR.test(ref)),
           O.map((ref) => ref.replace(/^.*-object-/, "")),
           O.map((ref) => ref.replace(/^data-models-/, "")),
+          O.map((ref) => ref.replace(/^shared-resources-/, "")),
           O.map((ref) => ref.replace(/^update-status-/, "")),
           O.map((ref) => ref.replace(/^buttons-/, "")),
           O.map(Enums.identifier(file)),

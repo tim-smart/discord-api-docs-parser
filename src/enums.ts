@@ -6,11 +6,14 @@ import * as Common from "./common";
 import * as Arr from "fp-ts/Array";
 
 export const enumSuffixR =
-  /(behaviors|enum|events|features|level|modes|opcodes|status|styles|tier|types?)$/i;
+  /(behaviors|enum|events|features|level|modes|opcodes|scopes|status|styles|tier|types?)$/i;
+
+export const enumExcludeR = /(send events|receive events)$/i;
 
 export const fromDocument = ($: Cheerio.CheerioAPI, file: string): Enum[] =>
   $("h2, h6")
     .filter((_, h6) => enumSuffixR.test($(h6).text()))
+    .filter((_, h6) => !enumExcludeR.test($(h6).text()))
     .filter((_, el) => Common.hasTable($(el)))
     .map((_, h6) => fromHeader($, file)($(h6)))
     .toArray();

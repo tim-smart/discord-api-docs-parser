@@ -54,6 +54,7 @@ const remaps: Record<string, string> = {
   Guildapplicationcommandpermission: "GuildApplicationCommandPermission",
   InteractionRequestType: "InteractionType",
   ImageDatum: "string",
+  Oauth2Scope: "OAuth2Scope",
   Object: "mixed",
   Presence: "PresenceUpdateEvent",
   PresenceUpdate: "PresenceUpdateEvent",
@@ -90,7 +91,7 @@ export const maybeRenameHeading = (file: string) => (id: string) =>
   );
 
 export const constantify = (input: string) =>
-  S(input.replace(/[^A-z1-9 ]/g, ""))
+  S(input.replace(/[^A-z1-9_. ]/g, "").replace(/\./g, "_"))
     .underscore()
     .s.toUpperCase();
 
