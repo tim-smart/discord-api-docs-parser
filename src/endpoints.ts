@@ -124,7 +124,9 @@ export const response = (
   route: string,
 ): O.Option<EndpointParams> => {
   const returns = F.pipe(
-    O.fromNullable(markdown.match(/\breturns .*?\./gi)),
+    O.fromNullable(
+      markdown.match(/\b(returns|responses? includes?|body is an?) .*?\./gi),
+    ),
     O.map((m) => m.join(" ")),
     O.chain(parseResponse),
   );
