@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.4.0](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.3.9...@tim-smart/discord-api-docs-parser@0.4.0) (2022-10-16)
+
+
+### Features
+
+* more endpoint response keywords ([6644c65](https://github.com/tim-smart/discord-api-docs-parser/commit/6644c65bb56b1ee03e2d4556c4bce3b4a98ec939))
+
+
+
+
+
 ## [0.3.9](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.3.8...@tim-smart/discord-api-docs-parser@0.3.9) (2022-09-28)
 
 **Note:** Version bump only for package @tim-smart/discord-api-docs-parser
