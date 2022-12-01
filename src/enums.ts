@@ -104,7 +104,8 @@ export const value = (
     $value,
     O.map(($el) => $el.text()),
     O.getOrElse(() => $name.text().trim()),
-    (val) => (/\d|"/.test(val) ? val : `"${val}"`),
+    (s) => s.replaceAll('"', ""),
+    (val) => (/^\d+$/.test(val) ? +val : val),
   );
 
   return {

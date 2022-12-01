@@ -148,7 +148,7 @@ const enumerableValue = ({ name, value, description }: Enum["values"][0]) => {
     O.map((d) => `/** ${d} */\n`),
     O.getOrElse(() => ""),
   );
-  return `${comment}${name} = ${value},`;
+  return `${comment}${name} = ${JSON.stringify(value)},`;
 };
 
 const flags = (f: Flags): Chunk => ({
