@@ -137,7 +137,7 @@ const maybeSnowflakeMap = (isMap: boolean) => (input: string) =>
 
 const enumerable = (e: Enum): Chunk => ({
   identifier: e.identifier,
-  source: `export enum ${e.identifier} {
+  source: `export const enum ${e.identifier} {
   ${e.values.map(enumerableValue).join("\n")}
 };`,
 });
