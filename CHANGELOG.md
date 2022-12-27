@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.5.0](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.4.1...@tim-smart/discord-api-docs-parser@0.5.0) (2022-12-27)
+
+
+### Features
+
+* const enums ([0627196](https://github.com/tim-smart/discord-api-docs-parser/commit/06271966dfa17646c1678aa9b66bfa7dc8e86704))
+
+
+
+
+
 ## [0.4.1](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.4.0...@tim-smart/discord-api-docs-parser@0.4.1) (2022-12-01)
 
 
