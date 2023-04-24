@@ -81,13 +81,13 @@ const gatewayPayload = (): Chunk => ({
   identifier: "GatewayPayload",
   source: `export interface GatewayPayload<T = any | null> {
   /** opcode for the payload */
-      op: GatewayOpcode;
-    /** event data */
-    d?: T;
+  readonly op: GatewayOpcode;
+  /** event data */
+  readonly d?: T;
   /** sequence number, used for resuming sessions and heartbeats */
-      s?: number | null;
-    /** the event name for this payload */
-        t?: string | null;
+  readonly s?: number | null;
+  /** the event name for this payload */
+  readonly t?: string | null;
 }`,
 });
 
@@ -107,7 +107,7 @@ const structureField = ({
   type,
   description,
 }: Structure["fields"][0]) => `/** ${description} */
-  "${name}"${optional || type.nullable ? "?" : ""}: ${F.pipe(
+  "readonly ${name}"${optional || type.nullable ? "?" : ""}: ${F.pipe(
   typeIdentifier(type.identifier),
   maybeSnowflakeMap(type.snowflakeMap),
 )}${type.array ? "[]" : ""}${type.nullable ? " | null" : ""};`;

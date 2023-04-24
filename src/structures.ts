@@ -172,6 +172,13 @@ const sanitizeIdentifier =
         ),
       ),
 
+      O.alt(() =>
+        F.pipe(
+          O.fromNullable(text.match(/\bfloat/i)),
+          O.map(() => "float"),
+        ),
+      ),
+
       // Boolean
       O.alt(() =>
         F.pipe(
