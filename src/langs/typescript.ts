@@ -107,7 +107,7 @@ const structureField = ({
   type,
   description,
 }: Structure["fields"][0]) => `/** ${description} */
-  "readonly ${name}"${optional || type.nullable ? "?" : ""}: ${F.pipe(
+  readonly "${name}"${optional || type.nullable ? "?" : ""}: ${F.pipe(
   typeIdentifier(type.identifier),
   maybeSnowflakeMap(type.snowflakeMap),
 )}${type.array ? "[]" : ""}${type.nullable ? " | null" : ""};`;
