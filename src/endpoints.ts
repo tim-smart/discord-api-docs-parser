@@ -66,13 +66,18 @@ export const params = (
   const takes: O.Option<EndpointParams> = F.pipe(
     O.fromNullable(/\bTakes a.*?\./.exec(markdown)),
     O.alt(() => O.fromNullable(/\bBody is.*?\./.exec(markdown))),
-    O.map((matches) => matches[0]),
-    O.map((md) => [Cheerio.load(Marked(md)), /array|list/.test(md)] as const),
-    O.chain(([$, array]) =>
+    O.alt(() => O.fromNullable(/\bFunctions the same as .*?\./.exec(markdown))),
+    O.map((matches) => ({
+      match: matches[0],
+      suffix: matches[0].includes("Functions the same as") ? "Params" : "",
+    })),
+    O.bind("$", ({ match }) => O.some(Cheerio.load(Marked(match)))),
+    O.bind("array", ({ match }) => O.some(/array|list/.test(match))),
+    O.chain(({ $, array, suffix }) =>
       F.pipe(
         Structures.referenceFromLinks("")($("a")),
         O.map((identifier) => ({
-          identifier,
+          identifier: `${identifier}${suffix}`,
           array,
           structures: [],
         })),
