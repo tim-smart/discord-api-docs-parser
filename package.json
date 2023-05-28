@@ -1,7 +1,7 @@
 {
   "name": "@tim-smart/discord-api-docs-parser",
   "description": "Discord API docs parser for generating code",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "main": "index.js",
   "author": "Tim Smart <tim.smart@arisechurch.com>",
   "license": "MIT",
