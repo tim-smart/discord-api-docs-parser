@@ -69,7 +69,15 @@ export const parse = (repoPath: string) => {
               const alias = endpoints.find(
                 (_) => _.route === response.identifier,
               );
-              return alias ? [{ ...alias, route: endpoint.route }] : [];
+              return alias
+                ? [
+                    {
+                      ...endpoint,
+                      params: alias.params,
+                      response: alias.response,
+                    },
+                  ]
+                : [];
             },
           ),
         ),
