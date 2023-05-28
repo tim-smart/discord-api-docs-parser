@@ -57,6 +57,24 @@ export const parse = (repoPath: string) => {
 
   const endpoints$ = filteredDocs$.pipe(
     RxO.flatMap(([file, [_, md]]) => Endpoints.fromDocument(md, file)),
+    RxO.toArray(),
+    RxO.flatMap((endpoints) =>
+      endpoints.flatMap((endpoint) =>
+        F.pipe(
+          endpoint.response,
+          O.filter((_) => _.alias === true),
+          O.fold(
+            () => [endpoint],
+            (response) => {
+              const alias = endpoints.find(
+                (_) => _.route === response.identifier,
+              );
+              return alias ? [{ ...alias, route: endpoint.route }] : [];
+            },
+          ),
+        ),
+      ),
+    ),
   );
 
   const structures$ = Rx.merge(

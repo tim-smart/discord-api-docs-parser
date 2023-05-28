@@ -54,6 +54,7 @@ export interface EndpointParams {
   identifier: string;
   array: boolean;
   structures: Structures.Structure[];
+  alias?: boolean;
 }
 
 export const params = (
@@ -66,18 +67,14 @@ export const params = (
   const takes: O.Option<EndpointParams> = F.pipe(
     O.fromNullable(/\bTakes a.*?\./.exec(markdown)),
     O.alt(() => O.fromNullable(/\bBody is.*?\./.exec(markdown))),
-    O.alt(() => O.fromNullable(/\bFunctions the same as .*?\./.exec(markdown))),
-    O.map((matches) => ({
-      match: matches[0],
-      suffix: matches[0].includes("Functions the same as") ? "Params" : "",
-    })),
+    O.map((matches) => ({ match: matches[0] })),
     O.bind("$", ({ match }) => O.some(Cheerio.load(Marked(match)))),
     O.bind("array", ({ match }) => O.some(/array|list/.test(match))),
-    O.chain(({ $, array, suffix }) =>
+    O.chain(({ $, array }) =>
       F.pipe(
         Structures.referenceFromLinks("")($("a")),
         O.map((identifier) => ({
-          identifier: `${identifier}${suffix}`,
+          identifier,
           array,
           structures: [],
         })),
@@ -136,6 +133,25 @@ export const response = (
     O.chain(parseResponse),
   );
 
+  const alias = F.pipe(
+    O.fromNullable(markdown.match(/\bfunctions the same as .*?\./gi)),
+    O.map((m) => m[0]),
+    O.map((_) => Cheerio.load(Marked(_))),
+    O.chain(($) =>
+      F.pipe(
+        Structures.referenceFromLinks("")($("a")),
+        O.map(
+          (_): EndpointParams => ({
+            identifier: identifier("")(_),
+            array: false,
+            structures: [],
+            alias: true,
+          }),
+        ),
+      ),
+    ),
+  );
+
   return F.pipe(
     Structures.fromDocument($, { exclude: /zzz/, include: /response/i }),
     Arr.map((structure) => {
@@ -152,6 +168,7 @@ export const response = (
       structures,
     })),
     O.alt(() => returns),
+    O.alt(() => alias),
   );
 };
 
