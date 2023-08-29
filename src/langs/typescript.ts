@@ -137,9 +137,12 @@ const maybeSnowflakeMap = (isMap: boolean) => (input: string) =>
 
 const enumerable = (e: Enum): Chunk => ({
   identifier: e.identifier,
-  source: `export const enum ${e.identifier} {
+  source: `export const ${e.identifier} = {
   ${e.values.map(enumerableValue).join("\n")}
-};`,
+} as const;
+export type ${e.identifier} = typeof ${e.identifier}[keyof typeof ${
+    e.identifier
+  }];`,
 });
 
 const enumerableValue = ({ name, value, description }: Enum["values"][0]) => {
@@ -148,7 +151,7 @@ const enumerableValue = ({ name, value, description }: Enum["values"][0]) => {
     O.map((d) => `/** ${d} */\n`),
     O.getOrElse(() => ""),
   );
-  return `${comment}${name} = ${JSON.stringify(value)},`;
+  return `${comment}${name}: ${JSON.stringify(value)},`;
 };
 
 const flags = (f: Flags): Chunk => ({
