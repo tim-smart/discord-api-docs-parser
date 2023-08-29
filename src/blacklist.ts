@@ -4,7 +4,11 @@ export const list = [
   "FieldRequirementsByEntityType",
   "GatewayEvent",
   "FormParam",
+  "StartThreadInForumOrMediaChannelForumAndMediaThreadMessageParams",
   "QueryStringParam",
 ];
 
-export const aliases = ["StartThreadInForumChannelParams"];
+export const aliases = [
+  "StartThreadInForumChannelParams",
+  "StartThreadInForumOrMediaChannelParams",
+];

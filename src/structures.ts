@@ -1,4 +1,5 @@
 import * as Cheerio from "cheerio";
+import * as Blacklist from "./blacklist";
 import * as F from "fp-ts/function";
 import * as Arr from "fp-ts/Array";
 import * as O from "fp-ts/Option";
