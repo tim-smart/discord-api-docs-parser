@@ -41,7 +41,7 @@ export const parse = (repoPath: string) => {
 
   const filteredDocs$ = docs$.pipe(
     RxO.filter(([file]) =>
-      /^(interactions|resources|topics\/(gateway|oauth2|permissions|teams|opcodes))/i.test(
+      /^(interactions|monetization\/(entitlements|skus)|resources|topics\/(gateway|oauth2|permissions|teams|opcodes))/i.test(
         file,
       ),
     ),
