@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.10](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.5.9...@tim-smart/discord-api-docs-parser@0.5.10) (2023-10-03)
+
+
+### Bug Fixes
+
+* add monetization docs ([c4cc1e8](https://github.com/tim-smart/discord-api-docs-parser/commit/c4cc1e8f6152b51643ec5adfdd74904b15879027))
+
+
+
+
+
 ## [0.5.9](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.5.8...@tim-smart/discord-api-docs-parser@0.5.9) (2023-08-29)
 
 
