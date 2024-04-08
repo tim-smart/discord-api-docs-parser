@@ -66,6 +66,7 @@ const remaps: Record<string, string> = {
   TeamMemberRolesTeamMemberRoleType: "TeamMemberRoleType",
   TextInputsTextInputStyle: "TextInputStyle",
   MessageComponent: "Component",
+  MessageInteractionMetadataStructure: "MessageInteractionMetadatum",
 
   // Gateway commands
   GuildRequestMember: "RequestGuildMember",
