@@ -275,6 +275,8 @@ const referenceFromSegment =
       O.some(ref),
       O.filter(() => includeStructures),
       O.filter((ref) => !excludeR.test(ref)),
+      O.map((ref) => ref.replace(/^poll-results-object-/, "")),
+      O.map((ref) => ref.replace(/-object-structure$/, "")),
       O.map((ref) => ref.replace(/^.*-object-/, "")),
       // Misc clean up
       O.map((ref) => ref.replace(/^data-models-/, "")),

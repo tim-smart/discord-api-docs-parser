@@ -77,6 +77,10 @@ const remaps: Record<string, string> = {
 
   // Gateway events
   Hello: "HelloEvent",
+
+  // Polls
+  MessagePollVoteAdd: "MessagePollVoteAddEvent",
+  MessagePollVoteRemove: "MessagePollVoteRemoveEvent",
 };
 export const maybeRename =
   (file: string, heading = false) =>

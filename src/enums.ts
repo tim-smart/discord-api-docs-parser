@@ -11,7 +11,7 @@ export const enumSuffixR =
 export const enumExcludeR = /(send events|receive events)$/i;
 
 export const fromDocument = ($: Cheerio.CheerioAPI, file: string): Enum[] =>
-  $("h2, h6")
+  $("h2, h3, h6")
     .filter((_, h6) => enumSuffixR.test($(h6).text()))
     .filter((_, h6) => !enumExcludeR.test($(h6).text()))
     .filter((_, el) => Common.hasTable($(el)))
