@@ -21,7 +21,7 @@ const isStructureTable =
 
 export const excludeR = /(%|example|json|type|change key|flag|modes?$|styles)/i;
 
-const headerSelectors = ["h2", "h6", "#client-status-object"];
+const headerSelectors = ["h2", "h4", "h6", "#client-status-object"];
 
 export const fromDocument = (
   $: Cheerio.CheerioAPI,
