@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.13](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.5.12...@tim-smart/discord-api-docs-parser@0.5.13) (2024-05-01)
+
+
+### Bug Fixes
+
+* for latest docs ([4f3a85b](https://github.com/tim-smart/discord-api-docs-parser/commit/4f3a85b44b20f59eed1a5479a8bc59a99f323644))
+
+
+
+
+
 ## [0.5.12](https://github.com/tim-smart/discord-api-docs-parser/compare/@tim-smart/discord-api-docs-parser@0.5.11...@tim-smart/discord-api-docs-parser@0.5.12) (2024-04-27)
 
 
