@@ -45,6 +45,7 @@ const remaps: Record<string, string> = {
   Applicationcommandpermission: "ApplicationCommandPermission",
   Applicationcommandpermissiontype: "ApplicationCommandPermissionType",
   Binary: "string",
+  BooleanQueryString: "boolean",
   BulkOverwriteGuildApplicationCommandBulkApplicationCommandParams:
     "BulkOverwriteGuildApplicationCommandParams",
   Connecting: "mixed",
@@ -81,6 +82,9 @@ const remaps: Record<string, string> = {
   // Polls
   MessagePollVoteAdd: "MessagePollVoteAddEvent",
   MessagePollVoteRemove: "MessagePollVoteRemoveEvent",
+
+  // Reactions
+  GetReactionsReactionType: "ReactionType",
 };
 export const maybeRename =
   (file: string, heading = false) =>

@@ -44,5 +44,6 @@
     "string": "^3.3.3",
     "yargs": "^17.0.1"
   },
-  "gitHead": "a1c2b8c284a9930bf4f14c99c02eff04fb9b428b"
+  "gitHead": "a1c2b8c284a9930bf4f14c99c02eff04fb9b428b",
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }
