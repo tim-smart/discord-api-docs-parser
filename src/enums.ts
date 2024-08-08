@@ -6,7 +6,7 @@ import * as Common from "./common";
 import * as Arr from "fp-ts/Array";
 
 export const enumSuffixR =
-  /(behaviors|enum|events|features|level|modes?|opcodes|scopes|status|styles|tier|types?)$/i;
+  /(behaviors|enum|events|features|level|modes?|opcodes|rule - .+|scopes|status|styles|tier|types?)$/i;
 
 export const enumExcludeR = /(send events|receive events)$/i;
 

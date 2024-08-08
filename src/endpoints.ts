@@ -43,7 +43,7 @@ export const identifier = (file: string) => (heading: string) =>
 
 export const url = (raw: string) =>
   raw.replace(
-    /\{(.*?)\}/g,
+    /\\?\{(.*?)\}/g,
     F.flow(
       (_, param: string) => param.split("#")[0].replace(/[^A-z]/g, "_"),
       (param) => `{${param}}`,

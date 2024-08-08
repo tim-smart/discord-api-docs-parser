@@ -24,7 +24,7 @@ export const parse = (repoPath: string) => {
   const API_DOCS_PATH = Path.join(API_REPO_PATH, "docs");
 
   const docs$ = FSU.files$(API_DOCS_PATH).pipe(
-    RxO.filter((file) => Path.extname(file) === ".md"),
+    RxO.filter((file) => /\.mdx?$/.test(Path.extname(file))),
 
     RxO.flatMap((file) =>
       Rx.zip(

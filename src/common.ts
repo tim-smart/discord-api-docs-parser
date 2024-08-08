@@ -53,6 +53,8 @@ const remaps: Record<string, string> = {
   Filecontent: "string",
   GetGateway: "mixed",
   Guildapplicationcommandpermission: "GuildApplicationCommandPermission",
+  GuildScheduledEventRecurrenceRuleNweekday:
+    "GuildScheduledEventRecurrenceRuleNWeekday",
   InteractionRequestType: "InteractionType",
   ImageDatum: "string",
   Oauth2Scope: "OAuth2Scope",
