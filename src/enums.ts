@@ -8,7 +8,7 @@ import * as Arr from "fp-ts/Array";
 export const enumSuffixR =
   /(behaviors|enum|events|features|level|modes?|opcodes|rule - .+|scopes|status|styles|tier|types?)$/i;
 
-export const enumExcludeR = /(send events|receive events)$/i;
+export const enumExcludeR = /(send events|receive events|structure)$/i;
 
 export const fromDocument = ($: Cheerio.CheerioAPI, file: string): Enum[] =>
   $("h2, h3, h4, h6")
