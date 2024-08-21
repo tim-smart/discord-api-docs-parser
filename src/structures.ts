@@ -1,5 +1,4 @@
 import * as Cheerio from "cheerio";
-import * as Blacklist from "./blacklist";
 import * as F from "fp-ts/function";
 import * as Arr from "fp-ts/Array";
 import * as O from "fp-ts/Option";
@@ -176,6 +175,13 @@ const sanitizeIdentifier =
       O.alt(() =>
         F.pipe(
           O.fromNullable(text.match(/\bfloat/i)),
+          O.map(() => "float"),
+        ),
+      ),
+
+      O.alt(() =>
+        F.pipe(
+          O.fromNullable(text.match(/\bdouble/i)),
           O.map(() => "float"),
         ),
       ),

@@ -68,6 +68,7 @@ const remaps: Record<string, string> = {
   StartThreadInForumOrMediaChannelForumAndMediaThreadMessageParam: "Message",
   TeamMemberRolesTeamMemberRoleType: "TeamMemberRoleType",
   TextInputsTextInputStyle: "TextInputStyle",
+  VoiceChannelEffectSendAnimationType: "AnimationType",
   MessageComponent: "Component",
   MessageInteractionMetadataStructure: "MessageInteractionMetadatum",
 
