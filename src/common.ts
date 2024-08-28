@@ -29,7 +29,7 @@ const fileRemaps: Record<string, Record<string, string>> = {
 };
 
 const fileHeadingRemaps: Record<string, Record<string, string>> = {
-  "interactions/Receiving_and_Responding.md": {
+  "interactions/Receiving_and_Responding.mdx": {
     Autocomplete: "InteractionCallbackAutocomplete",
     Message: "InteractionCallbackMessage",
     Modal: "InteractionCallbackModal",

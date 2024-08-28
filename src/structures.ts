@@ -18,7 +18,8 @@ const isStructureTable =
     return field && type && description;
   };
 
-export const excludeR = /(%|example|json|type|change key|flag|modes?$|styles)/i;
+export const excludeR =
+  /(%|example|json|type|change key|flag|modes?$|enum$|styles)/i;
 
 const headerSelectors = ["h2", "h4", "h6", "#client-status-object"];
 
@@ -275,8 +276,16 @@ export const referenceFromLink =
     );
 
 const referenceFromSegment =
-  (file: string, includeStructures: boolean) => (ref: string) =>
-    F.pipe(
+  (file: string, includeStructures: boolean) => (ref: string) => {
+    if (/get-application-activity-instance/.test(ref)) {
+      console.error({
+        file,
+        ref,
+        includeStructures,
+        excludeR: excludeR.test(ref),
+      });
+    }
+    return F.pipe(
       // Structures
       O.some(ref),
       O.filter(() => includeStructures),
@@ -287,6 +296,10 @@ const referenceFromSegment =
       // Misc clean up
       O.map((ref) => ref.replace(/^data-models-/, "")),
       O.map((ref) => ref.replace(/^shared-resources-/, "")),
+      O.map((ref) => ref.replace(/^get-application-activity-instance-/, "")),
+      O.map((ref) =>
+        ref.replace(/^interaction-callback-interaction/, "interaction"),
+      ),
       O.map((ref) => ref.replace(/identify-identify/, "identify")),
       O.map(identifier(file)),
 
@@ -300,6 +313,9 @@ const referenceFromSegment =
           O.map((ref) => ref.replace(/^shared-resources-/, "")),
           O.map((ref) => ref.replace(/^update-status-/, "")),
           O.map((ref) => ref.replace(/^buttons-/, "")),
+          O.map((ref) =>
+            ref.replace(/^get-application-activity-instance-/, ""),
+          ),
           O.map(Enums.identifier(file)),
         ),
       ),
@@ -327,6 +343,7 @@ const referenceFromSegment =
         ),
       ),
     );
+  };
 
 export const identifierOrReference =
   (file: string) =>
