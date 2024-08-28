@@ -276,16 +276,8 @@ export const referenceFromLink =
     );
 
 const referenceFromSegment =
-  (file: string, includeStructures: boolean) => (ref: string) => {
-    if (/get-application-activity-instance/.test(ref)) {
-      console.error({
-        file,
-        ref,
-        includeStructures,
-        excludeR: excludeR.test(ref),
-      });
-    }
-    return F.pipe(
+  (file: string, includeStructures: boolean) => (ref: string) =>
+    F.pipe(
       // Structures
       O.some(ref),
       O.filter(() => includeStructures),
@@ -343,7 +335,6 @@ const referenceFromSegment =
         ),
       ),
     );
-  };
 
 export const identifierOrReference =
   (file: string) =>
