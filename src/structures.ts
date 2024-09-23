@@ -216,6 +216,14 @@ const sanitizeIdentifier =
         ),
       ),
 
+      // data uri
+      O.alt(() =>
+        F.pipe(
+          O.fromNullable(text.match(/data uri/)),
+          O.map(() => "string"),
+        ),
+      ),
+
       // Mixed
       O.alt(() =>
         F.pipe(
