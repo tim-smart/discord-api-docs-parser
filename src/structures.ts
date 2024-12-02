@@ -19,7 +19,7 @@ const isStructureTable =
   };
 
 export const excludeR =
-  /(%|example|json|type|change key|flag|modes?$|enum$|styles)/i;
+  /(%|example|json|type|change key|flag|modes?$|enum$|styles|webhook status)/i;
 
 const headerSelectors = ["h2", "h4", "h6", "#client-status-object"];
 
@@ -272,7 +272,7 @@ export const referenceFromLink =
     F.pipe(
       O.some($link),
       O.chainNullableK(($link) => $link.attr("href")),
-      O.filter((href) => !/wikipedia/.test(href)),
+      O.filter((href) => !/wikipedia|preparing-for-events/.test(href)),
       O.chain(
         F.flow(
           (href) => href.split("/"),

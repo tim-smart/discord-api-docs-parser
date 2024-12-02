@@ -67,4 +67,14 @@ export const list: Alias[] = [
   },
   { identifier: "ResumedEvent", nullable: false, types: ["null"] },
   { identifier: "ReconnectEvent", nullable: false, types: ["null"] },
+  {
+    identifier: "MessageInteractionMetadatum",
+    nullable: false,
+    combinator: "or",
+    types: [
+      "ApplicationCommandInteractionMetadatum",
+      "MessageComponentInteractionMetadatum",
+      "ModalSubmitInteractionMetadatum",
+    ],
+  },
 ];

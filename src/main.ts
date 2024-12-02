@@ -41,14 +41,14 @@ export const parse = (repoPath: string) => {
 
   const filteredDocs$ = docs$.pipe(
     RxO.filter(([file]) =>
-      /^(interactions|monetization\/(entitlements|skus)|resources|topics\/(gateway|oauth2|permissions|teams|opcodes))/i.test(
+      /^(events|interactions|monetization\/(entitlements|skus)|resources|topics\/(oauth2|permissions|teams|opcodes))/i.test(
         file,
       ),
     ),
   );
 
   const gatewayDocs$ = docs$.pipe(
-    RxO.filter(([file]) => /^topics\/gateway/i.test(file)),
+    RxO.filter(([file]) => /^events\//i.test(file)),
   );
 
   const gateway$ = gatewayDocs$.pipe(
